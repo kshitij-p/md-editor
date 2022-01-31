@@ -1,4 +1,4 @@
-import React, { EventHandler, FormEvent, useContext, useEffect, useRef } from 'react';
+import React, { EventHandler, FormEvent, SyntheticEvent, useContext, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { marked } from 'marked';
 import customRenderer from '../utils/marked/customRenderer'
@@ -98,21 +98,36 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
         font-size: 1.1em;
     }
 
+    span.rendered-link-wrapper {
+        position: relative;
+    }
+    
     a.rendered-link {
-        color: hsl(202, 90%, 47%);
-
+        
         position: relative;
 
-        :before {
-            content: attr(data-title);
-            
-            position: absolute;
+        color: hsl(207, 90%, 64%);
+        text-decoration: none;
+
+        :hover + span.rendered-link-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        :hover {
+            text-decoration: underline;
+        }
+        
+    }
+
+    span.rendered-link-tooltip {
+        position: absolute;
             height: 100%;
             width: 100%;
-            padding: 0.25em 0.5em;
+            padding: 0.75em 1.25em;
 
-            top: 50%;
-            left: 50%;
+            top: 75%;
+            left: 60%;
 
             display: flex;
             justify-content: center;
@@ -127,17 +142,17 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
 
 
             transition: 0.1s ease-in-out;
-        }
-
-        :hover, :focus-within {
-            :before {
-                opacity: 1;
-                visibility: visible;
-            }
-        }
-
+            transition-delay: 1s;
         
+        :hover {
+            opacity: 1;
+            visibility: visible;
+
+            
+        }
     }
+    
+
 
     div.rendered-checkbox {
         
@@ -157,13 +172,17 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
         }
     }
 
+    .rendered-checkbox-text {
+        display: inline;
+    }
+
     b.rendered-checkbox-text {
         white-space: pre-wrap;
     }
 
 `
 
-marked.use({ renderer: customRenderer, sanitize: true });
+marked.use({ renderer: customRenderer });
 
 const EditorInputArea: React.FC = () => {
 
@@ -194,9 +213,6 @@ const EditorInputArea: React.FC = () => {
 
             editorFunctions.setInEditorMode(false);
         }
-        let tokens = marked.lexer(editor.editorTextValue);
-        console.log(tokens);
-
 
         let parsed = marked.parse(editor.editorTextValue);
 
@@ -208,11 +224,17 @@ const EditorInputArea: React.FC = () => {
     }
 
 
-    const openEditorOnClick = () => {
-        editorFunctions.setInEditorMode(true);
+    const openEditorOnClick: EventHandler<React.MouseEvent> = (e) => {
+        e.stopPropagation();
+        
+        if(!document.getSelection()?.toString()){
 
+            editorFunctions.setInEditorMode(true);
+        }
+        
     }
 
+    /* Focuses our input immediately on click */
     useEffect(() => {
 
         if (editor.editorTextAreaRef.current) {
@@ -227,16 +249,41 @@ const EditorInputArea: React.FC = () => {
         }
 
     }, [editor.inEditorMode, editor.editorTextAreaRef])
-
+    
+    /* Update innerHtml whenever rendered text value udpates */
     useEffect(() => {
 
         if (renderedView.renderedViewDivRef.current) {
-            renderedView.renderedViewDivRef.current.innerHTML = editor.renderedTextValue;
+            renderedView.renderedViewDivRef.current.innerHTML = renderedView.renderedTextValue;
         }
 
-    }, [editor.renderedTextValue])
+    }, [renderedView.renderedTextValue])
 
-    console.log(renderedView.renderedViewDivRef.current?.innerHTML);
+
+    /* Prevent link click from opening editor */
+    useEffect(()=>{
+
+        const stopLinkEventPropagation = (e: Event)=>{
+            e.stopPropagation();
+        }
+
+        console.log('yello');
+        
+        for(let link of document.querySelectorAll('a.rendered-link')){
+
+            if(!editor.inEditorMode){
+                link.addEventListener('click', stopLinkEventPropagation);
+            }
+        }
+
+        return function cleanup(){
+            for(let link of document.querySelectorAll('a.rendered-link')){
+    
+                link.removeEventListener('click', stopLinkEventPropagation);
+            }
+        }
+
+    }, [renderedView.renderedTextValue, editor.inEditorMode])
 
     return (
         <EditorInputAreaDiv>

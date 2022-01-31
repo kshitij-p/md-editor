@@ -39,10 +39,8 @@ const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string,
                     word += text[i];
                 }
             };
-            console.log({ word });
         }
 
-        console.log({ generatedHtml });
 
         return generatedHtml; // parseInline to turn child tokens into HTML
 

@@ -4,11 +4,12 @@ type EditorContextState = {
     editor: {
         inEditorMode: boolean;
         editorTextValue: string;
-        renderedTextValue: string;
+        
         editorTextAreaRef: RefObject<HTMLTextAreaElement>;
     },
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
+        renderedTextValue: string;
     }
 }
 
@@ -29,6 +30,8 @@ const EditorContext = createContext({} as EditorContextType);
 
 const EditorContextProvider: React.FC = (props) => {
 
+    
+
     const [inEditorMode, setInEditorMode] = useState(false);
     const [editorTextValue, setEditorTextValue] = useState('');
     const editorTextAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -41,12 +44,12 @@ const EditorContextProvider: React.FC = (props) => {
         editor: {
             inEditorMode,
             editorTextValue,
-            renderedTextValue,
             editorTextAreaRef,
             
         },
         renderedView: {
-            renderedViewDivRef
+            renderedViewDivRef,
+            renderedTextValue,
         }
 
     }
