@@ -1,8 +1,9 @@
-import React, { EventHandler, FormEvent, SyntheticEvent, useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, } from 'react';
 import styled from 'styled-components';
 import { marked } from 'marked';
 import customRenderer from '../utils/marked/customRenderer'
 import { EditorContext } from './EditorContext';
+import CodeMirrorEditor from './CodeMirrorEditor';
 
 
 const EditorInputAreaDiv = styled.div`
@@ -10,7 +11,6 @@ const EditorInputAreaDiv = styled.div`
     
     display: flex;
     flex-direction: column;
-    justify-content: center;
 
     .menubar {
         height: 5%;
@@ -20,38 +20,10 @@ const EditorInputAreaDiv = styled.div`
     
 `
 
-type EditorTextAreaProps = {
-    textEditorOpen: boolean;
-}
-
 type RenderedTextDivProps = {
     textEditorOpen: boolean;
 }
 
-const EditorTextArea = styled.textarea<EditorTextAreaProps>`
-    border: none;
-        outline: none;
-        height: 95%;
-        width: 100%;
-      
-
-        background-color: hsla(0, 0%, 10%, 0.1);
-
-        font-size: 2em;
-        color: white;
-        
-        visibility: ${props => props.textEditorOpen ? 'visible' : 'hidden'};
-        opacity: ${props => props.textEditorOpen ? '1' : '0'};
-
-        display: ${props => props.textEditorOpen ? 'inline-block' : 'none'};
-
-        :focus {
-            border: none;
-            outline: none;
-            box-shadow: none;
-        }
-    
-`
 
 const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     height: 100%;
@@ -62,10 +34,11 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     font-size: 2em;
     font-weight: 300;
 
-    visibility: ${props => !props.textEditorOpen ? 'visible' : 'hidden'};
+    /* For hide option */
+    /* visibility: ${props => !props.textEditorOpen ? 'visible' : 'hidden'};
     opacity: ${props => !props.textEditorOpen ? '1' : '0'};
 
-    display: ${props => !props.textEditorOpen ? 'inline-block' : 'none'};
+    display: ${props => !props.textEditorOpen ? 'inline-block' : 'none'}; */
 
     overflow-y: scroll;
     scrollbar-width: none;
@@ -182,7 +155,6 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
 
 `
 
-marked.use({ renderer: customRenderer });
 
 const EditorInputArea: React.FC = () => {
 
@@ -190,100 +162,29 @@ const EditorInputArea: React.FC = () => {
     const { editorState, editorFunctions } = useContext(EditorContext);
 
     const { editor } = editorState;
+
     const { renderedView } = editorState;
 
+    const openEditorOnClick = () => {
+        editorFunctions.setInEditorMode(true);
 
-    const handleOnChange = (e: FormEvent<HTMLTextAreaElement>) => {
-        editorFunctions.setEditorTextValue(e.currentTarget.value);
     }
 
+    useEffect(() => {
 
-    const escapeToBlur: EventHandler<React.KeyboardEvent> = (e) => {
-        if (e.code === "Escape") {
-            if (editor.editorTextAreaRef.current && document.activeElement === editor.editorTextAreaRef.current) {
-
-                editorFunctions.setInEditorMode(false);
-
-            }
-        }
-    }
-
-    const parseOnBlur = () => {
         if (editor.inEditorMode) {
-
-            editorFunctions.setInEditorMode(false);
-        }
-
-        let parsed = marked.parse(editor.editorTextValue);
-
-        if (renderedView.renderedViewDivRef.current) {
-
-            renderedView.renderedViewDivRef.current.innerHTML = parsed;
-        }
-
-    }
-
-
-    const openEditorOnClick: EventHandler<React.MouseEvent> = (e) => {
-        e.stopPropagation();
-        
-        if(!document.getSelection()?.toString()){
-
-            editorFunctions.setInEditorMode(true);
-        }
-        
-    }
-
-    /* Focuses our input immediately on click */
-    useEffect(() => {
-
-        if (editor.editorTextAreaRef.current) {
-
-            if (editor.inEditorMode) {
-
-                editor.editorTextAreaRef.current.focus();
-
-            } else {
-                editor.editorTextAreaRef.current.blur();
+            if (editor.editorRef.current && editor.editorRef.current.editor.state.focused === false) {
+                editor.editorRef.current.editor.focus();
+            }
+        } else {
+            if (editor.editorRef.current && editor.editorRef.current.editor.state.focused === true) {
+                editor.editorRef.current.editor.display.input.blur();
             }
         }
 
-    }, [editor.inEditorMode, editor.editorTextAreaRef])
+    }, [editor.inEditorMode])
+
     
-    /* Update innerHtml whenever rendered text value udpates */
-    useEffect(() => {
-
-        if (renderedView.renderedViewDivRef.current) {
-            renderedView.renderedViewDivRef.current.innerHTML = renderedView.renderedTextValue;
-        }
-
-    }, [renderedView.renderedTextValue])
-
-
-    /* Prevent link click from opening editor */
-    useEffect(()=>{
-
-        const stopLinkEventPropagation = (e: Event)=>{
-            e.stopPropagation();
-        }
-
-        console.log('yello');
-        
-        for(let link of document.querySelectorAll('a.rendered-link')){
-
-            if(!editor.inEditorMode){
-                link.addEventListener('click', stopLinkEventPropagation);
-            }
-        }
-
-        return function cleanup(){
-            for(let link of document.querySelectorAll('a.rendered-link')){
-    
-                link.removeEventListener('click', stopLinkEventPropagation);
-            }
-        }
-
-    }, [renderedView.renderedTextValue, editor.inEditorMode])
 
     return (
         <EditorInputAreaDiv>
@@ -291,14 +192,15 @@ const EditorInputArea: React.FC = () => {
 
             </div>
 
+            
 
-            <EditorTextArea onKeyUp={escapeToBlur} ref={editorState.editor.editorTextAreaRef} value={editor.editorTextValue} onChange={handleOnChange} onBlur={parseOnBlur}
-                textEditorOpen={editor.inEditorMode} />
+                <CodeMirrorEditor />
 
-            <RenderedTextDiv tabIndex={2} onClick={openEditorOnClick} ref={renderedView.renderedViewDivRef}
-                textEditorOpen={editor.inEditorMode} >
-            </RenderedTextDiv>
-
+                <RenderedTextDiv tabIndex={2} onClick={openEditorOnClick} ref={renderedView.renderedViewDivRef}
+                    textEditorOpen={editorState.editor.inEditorMode} >
+                </RenderedTextDiv>
+           
+            
 
 
 

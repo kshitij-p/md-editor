@@ -1,11 +1,13 @@
-import { createContext, HtmlHTMLAttributes, RefObject, useReducer, useRef, useState } from "react";
+import { marked } from "marked";
+import { createContext, HtmlHTMLAttributes, RefObject, useEffect, useReducer, useRef, useState } from "react";
+import customRenderer from "../utils/marked/customRenderer";
 
 type EditorContextState = {
     editor: {
         inEditorMode: boolean;
         editorTextValue: string;
         
-        editorTextAreaRef: RefObject<HTMLTextAreaElement>;
+        editorRef: RefObject<any>;
     },
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
@@ -19,6 +21,7 @@ type EditorContextType = {
         setInEditorMode: Function;
         setEditorTextValue: Function;
         setRenderedTextValue: Function;
+        parseEditorText: Function;
         
     },
     
@@ -26,25 +29,30 @@ type EditorContextType = {
 
 const EditorContext = createContext({} as EditorContextType);
 
+marked.use({ renderer: customRenderer });
 
 
 const EditorContextProvider: React.FC = (props) => {
 
     
 
-    const [inEditorMode, setInEditorMode] = useState(false);
+    const [inEditorMode, setInEditorMode] = useState(true);
     const [editorTextValue, setEditorTextValue] = useState('');
-    const editorTextAreaRef = useRef<HTMLTextAreaElement>(null);
+    const editorRef = useRef<any>(null);
 
     const [renderedTextValue, setRenderedTextValue] = useState('');
     const renderedViewDivRef = useRef<HTMLDivElement>(null)
 
+    const parseEditorText = ()=>{
+        let parsed = marked.parse(editorTextValue);
+        setRenderedTextValue(parsed);
+    }    
 
     const state: EditorContextState = {
         editor: {
             inEditorMode,
             editorTextValue,
-            editorTextAreaRef,
+            editorRef,
             
         },
         renderedView: {
@@ -54,7 +62,21 @@ const EditorContextProvider: React.FC = (props) => {
 
     }
 
-    const editorFunctions = { setInEditorMode, setEditorTextValue, setRenderedTextValue};
+    const editorFunctions = { setInEditorMode, setEditorTextValue, setRenderedTextValue, parseEditorText};
+
+    useEffect(()=>{
+        parseEditorText();
+    }, [editorTextValue])
+
+    useEffect(()=>{
+
+        if(renderedViewDivRef.current){
+            renderedViewDivRef.current.innerHTML = renderedTextValue;
+        }
+
+    }, [renderedTextValue])
+
+   
 
     return (
         <EditorContext.Provider value={{ editorState: state, editorFunctions }}>

@@ -7,7 +7,7 @@ type CustomRendererType = {
     paragraph: Function;
 }
 
-const customRenderer: Renderer & any & CustomRendererType =  {
+const customRenderer: Renderer & any & CustomRendererType = {
     heading(text: string, level: number) {
 
         return generateCheckboxRenderer(text, {
@@ -23,12 +23,12 @@ const customRenderer: Renderer & any & CustomRendererType =  {
     },
     paragraph(text: string) {
 
-        
+
         return generateCheckboxRenderer(text, {
             openingTag: '<b class="rendered-checkbox-text">',
             closingTag: '</b>'
         })
-       
+
     }
 
 }

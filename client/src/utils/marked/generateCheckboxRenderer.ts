@@ -18,8 +18,9 @@ const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string,
         let word = '';
 
         for (let i = 0; i < text.length; i++) {
+            
             if (checkboxIndexes[i]) {
-                generatedHtml += generatedHtml += outPutTag.openingTag + word + outPutTag.closingTag;;
+                generatedHtml += outPutTag.openingTag + word + outPutTag.closingTag;
                 word = '';
 
                 let ticked = checkboxIndexes[i].ticked;
@@ -30,7 +31,7 @@ const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string,
                     'white'};--bg-border: ${!ticked ? '2px solid black' : ''} ">${ticked ? '<img src="/tickmark.svg" class="tickmark-svg" />' : ''}</div>`;
 
                 i += 2;
-
+                
             } else {
                 if (i === text.length - 1) {
                     generatedHtml += outPutTag.openingTag + word + outPutTag.closingTag;
@@ -41,8 +42,7 @@ const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string,
             };
         }
 
-
-        return generatedHtml; // parseInline to turn child tokens into HTML
+        return generatedHtml; 
 
     }
 
