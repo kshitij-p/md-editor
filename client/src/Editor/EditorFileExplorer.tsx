@@ -288,14 +288,18 @@ const ExplorerControlsDiv = styled.div`
     }
 
     .add-btn {
+        border: none;
+        outline: none;
         margin-left: auto;
 
+        background-color: transparent;
         opacity: 0.5;
+
         
         transition: 0.15s ease-in-out;
         cursor: pointer;
 
-        :hover {
+        :hover, :focus {
             opacity: 1;
         }
     }
@@ -314,9 +318,9 @@ const EditorFileExplorer: React.FC = (props) => {
                         <input type="text"  />
                     </div>
 
-                    <div className="add-btn">
-                        <img src="plusicon.svg" alt="create document button" />
-                    </div>
+                    <button className="add-btn" aria-label="Create new document button">
+                        <img src="plusicon.svg" alt="plus icon" />
+                    </button>
 
                 </ExplorerControlsDiv>
 
