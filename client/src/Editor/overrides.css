@@ -6,5 +6,5 @@
 
 .CodeMirror-scroll {
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
 }

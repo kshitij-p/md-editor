@@ -40,7 +40,9 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     width: 100%;
 
     /* Padding for our splitter */
-    padding-top: 5px; /* CHange me when orientatiobn changes */
+    padding-top: calc(5px + 1em); /* Change me when orientatiobn changes */
+    
+    padding-left: 1em;
 
     background-color: hsla(0, 0%, 70%, 0.1);
 
@@ -248,9 +250,7 @@ const EditorInputArea: React.FC = () => {
 
     const onSplitterDragStart = (event: any) => {
 
-      /*   event.dataTransfer.effectAllowed = "none";
-        event.dataTransfer.dropEffect = "none";
- */
+      
         let newGhostImg: HTMLDivElement = event.target.parentElement;
 
         if (!newGhostImg) {
@@ -293,7 +293,6 @@ const EditorInputArea: React.FC = () => {
 
     const onSplitterDragEnd = () => {
         editorFunctions.setIsDraggingSplitter(false);
-        console.log('meow');
     }
 
     /* Focus and blur editor whenever inEditorMode changes */
@@ -344,8 +343,44 @@ const EditorInputArea: React.FC = () => {
 
     }, [editor.editorPaneRef, editor.editorHeight, renderedView.renderedViewDivRef])
 
-    /* Fix body cursor incase something goes wrong (different drop zones can potentially cause problems) */
 
+    const onTouchStart = (event: any)=>{
+        event.preventDefault();
+       /*  document.body.style.overflow = 'hidden'; */
+      /*   document.body.style.touchAction = 'none'; */
+    }
+
+    const onTouchMove = (event: any)=>{
+        event.preventDefault();
+        if (!event.targetTouches.length) {
+            return;
+        }
+        
+
+        let newY = event.targetTouches[0].clientY;
+
+        let totalEditorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
+
+        if (totalEditorHeight) {
+
+            let newHeight = Math.round((newY * 100) / totalEditorHeight);
+            console.log({ newHeight });
+
+            if (Math.abs(newHeight - editor.editorHeight) >= 2) {
+
+                editorFunctions.setEditorHeight(newHeight);
+                console.log(event);
+                console.log(event.target.getBoundingClientRect());
+
+            }
+        }
+
+    }
+
+    const onTouchEnd = ()=>{
+       /*  document.body.style.overflow = ''; */
+       /*  document.body.style.touchAction = ''; */
+    }
 
     return (
         <EditorInputAreaDiv>
@@ -366,7 +401,10 @@ const EditorInputArea: React.FC = () => {
                     style={{ top: `${editor.editorHeight}%` }}>
                     <div className='pane-splitter-thumb' onDrag={onSplitterDrag} onDragStart={onSplitterDragStart}
                         onDragEnd={onSplitterDragEnd}
-                        draggable={true} onClick={onSplitterClick}></div>
+                        draggable={true} onClick={onSplitterClick}
+                        onTouchStart={onTouchStart}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}></div>
                 </PaneSplitterDiv>
 
                 <RenderedTextDiv tabIndex={2} onClick={openEditorOnClick} ref={renderedView.renderedViewDivRef}

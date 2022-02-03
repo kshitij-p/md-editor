@@ -1,6 +1,7 @@
 import { marked } from "marked";
-import { createContext, RefObject, useRef, useState } from "react";
+import { createContext, RefObject, useEffect, useRef, useState } from "react";
 import customRenderer from "../utils/marked/customRenderer";
+import { sampleResponse } from "../utils/sampleResponse";
 
 type EditorContextState = {
     editor: {
@@ -83,7 +84,12 @@ const EditorContextProvider: React.FC = (props) => {
     }
 
     const editorFunctions = { setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue, parseEditorText, setIsDraggingSplitter};
-  
+    
+    useEffect(()=>{
+        let newText = sampleResponse;
+
+        setEditorTextValue(newText);
+    }, [])
 
     return (
         <EditorContext.Provider value={{ editorState: state, editorFunctions }}>

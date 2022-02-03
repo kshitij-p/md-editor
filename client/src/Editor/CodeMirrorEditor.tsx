@@ -153,7 +153,8 @@ class CodeMirrorEditor extends React.PureComponent {
                             autoFocus: true,
                             theme: 'material',
                             lineNumbers: true,
-                            mode: 'gfm'
+                            mode: 'gfm',
+                            lineWrapping: true
 
                         }
                     }

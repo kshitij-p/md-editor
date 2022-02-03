@@ -10,11 +10,16 @@ type CustomRendererType = {
 const customRenderer: Renderer & any & CustomRendererType = {
     heading(text: string, level: number) {
 
+        /* We replace the br with the replacement so line breaks render properly in heading tags */
+
         return generateCheckboxRenderer(text, {
             openingTag: `<h${level} class="rendered-heading rendered-heading-${level} rendered-checkbox-text">`,
             closingTag: `</h${level}>`,
             defaultTag: `<h${level} class="rendered-heading rendered-heading-${level}">`
-        })
+        }).replaceAll('<br>', '\n<br>');
+
+        
+
 
     },
 
