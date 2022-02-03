@@ -19,8 +19,8 @@ const Login: React.FC = (props) => {
         <>
             <form method='POST' action='/api/login'>
 
-                <input type="text" value={username} onChange={handleChangeUsername} />
-                <input type="password" value={password} onChange={handleChangePassword} />
+                <input type="text" value={username} onChange={handleChangeUsername} name="email" />
+                <input type="password" value={password} onChange={handleChangePassword} name="password" />
                 <button>Login</button>
             </form>
         </>

@@ -2,7 +2,7 @@ import React, { ChangeEvent, EventHandler, FormEvent, useState } from 'react';
 
 
 
-const Login: React.FC = (props) => {
+const Register: React.FC = (props) => {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -19,12 +19,12 @@ const Login: React.FC = (props) => {
         <>
             <form method='POST' action='/api/register'>
 
-                <input type="text" value={username} onChange={handleChangeUsername} />
-                <input type="password" value={password} onChange={handleChangePassword} />
+                <input type="text" value={username} onChange={handleChangeUsername} name="email" />
+                <input type="password" value={password} onChange={handleChangePassword} name="password" />
                 <button>Register</button>
             </form>
         </>
     );
 };
 
-export default Login;
+export default Register;

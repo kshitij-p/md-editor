@@ -3,8 +3,21 @@ const matter = require('gray-matter')
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
+
+const session = require('express-session');
+
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const verifyUser = require('./utils/verifyUser');
 
 const mongoose = require('mongoose');
+const User = require('./models/User');
+const isLogged = require('./utils/isLogged');
+const getUserFiles = require('./utils/getUserFiles');
+
+const userRouter = require('./routers/userRouter');
+
 
 const diskStorage = multer.diskStorage({
     destination: path.join(__dirname, 'public', 'tmp'),
@@ -33,28 +46,56 @@ const upload = multer({
     }
 })
 
+
+let port = process.env.PORT || 8080;
+
 const app = express();
+
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'sometotallysecuresecret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: false
+    }
+}))
+
+/* Init passport */
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use('local', new LocalStrategy({ usernameField: 'email' }, verifyUser))
+
+passport.serializeUser(async (user, done) => {
+
+    return done(null, user._id);
+})
+
+passport.deserializeUser(async (id, done) => {
+    let user = await User.findById(id);
+    return done(null, user);
+})
+
+/* ^ Init passport ^ */
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-let port = process.env.PORT || 8080;
-
-mongoose.connect('mongodb://localhost:27017/mdeditor').then(()=>{
+mongoose.connect('mongodb://localhost:27017/mdeditor').then(() => {
     console.log('Mongoose connected')
-}).catch((e)=>{
+}).catch((e) => {
     console.log("Couldn't conenct to mongodb", e);
 })
 
-app.post('/api/login', (req, res)=>{
-    return res.status(200).json('hello');
-})
+app.use(userRouter);
 
-app.post('/api/parsefile', upload.single('file'), async(req, res) => {
+app.post('/api/parsefile', upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({
             message: "Invalid file type or file size too long",
-            
+
         })
     }
 
@@ -77,6 +118,8 @@ app.post('/api/parsefile', upload.single('file'), async(req, res) => {
     return res.status(200).json(parsedFile);
 
 })
+
+app.get('/get')
 
 app.listen(port, (e) => {
     console.log('Listening to port 8080')
