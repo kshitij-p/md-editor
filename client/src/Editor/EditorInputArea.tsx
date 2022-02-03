@@ -26,8 +26,7 @@ const EditorInputAreaDiv = styled.div`
 
         flex-grow: 1;
 
-        box-shadow: 0px 0px 24px hsl(0, 0%, 0%);
-
+        
         position: relative;
     }
 `

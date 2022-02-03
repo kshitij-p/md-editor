@@ -4,6 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const mongoose = require('mongoose');
+
 const diskStorage = multer.diskStorage({
     destination: path.join(__dirname, 'public', 'tmp'),
     filename: (req, file, cb) => {
@@ -38,8 +40,14 @@ app.use(express.urlencoded({ extended: true }))
 
 let port = process.env.PORT || 8080;
 
-app.get('/blah', (req, res)=>{
-    res.send('meow');
+mongoose.connect('mongodb://localhost:27017/mdeditor').then(()=>{
+    console.log('Mongoose connected')
+}).catch((e)=>{
+    console.log("Couldn't conenct to mongodb", e);
+})
+
+app.post('/api/login', (req, res)=>{
+    return res.status(200).json('hello');
 })
 
 app.post('/api/parsefile', upload.single('file'), async(req, res) => {
