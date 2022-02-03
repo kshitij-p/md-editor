@@ -1,7 +1,8 @@
-const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string, closingTag: string }) => {
+const generateCheckboxRenderer = (text: string, outputTag: 
+    { openingTag: string, closingTag: string, defaultTag: string }
+    ,) => {
     /* Check match */
     const rule = /\[[ |x]\]/g;
-
     if (text.match(rule)) {
 
         let checkboxIndexes: any = {};
@@ -16,11 +17,12 @@ const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string,
 
         let generatedHtml = '';
         let word = '';
+        
 
         for (let i = 0; i < text.length; i++) {
             
             if (checkboxIndexes[i]) {
-                generatedHtml += outPutTag.openingTag + word + outPutTag.closingTag;
+                generatedHtml += outputTag.openingTag + word + outputTag.closingTag;
                 word = '';
 
                 let ticked = checkboxIndexes[i].ticked;
@@ -34,7 +36,7 @@ const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string,
                 
             } else {
                 if (i === text.length - 1) {
-                    generatedHtml += outPutTag.openingTag + word + outPutTag.closingTag;
+                    generatedHtml += outputTag.openingTag + word + outputTag.closingTag;
                     word = '';
                 } else {
                     word += text[i];
@@ -44,9 +46,11 @@ const generateCheckboxRenderer = (text: string, outPutTag: { openingTag: string,
 
         return generatedHtml; 
 
-    }
+    } else {
 
-    return outPutTag.openingTag + text + outPutTag.closingTag;
+        return `${outputTag.defaultTag}${text}${outputTag.closingTag}`
+    }
+    
 
 }
 

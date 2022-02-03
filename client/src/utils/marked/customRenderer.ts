@@ -1,4 +1,4 @@
-import { Renderer, TextRenderer } from "marked";
+import { Renderer } from "marked";
 import generateCheckboxRenderer from "./generateCheckboxRenderer";
 
 type CustomRendererType = {
@@ -12,7 +12,8 @@ const customRenderer: Renderer & any & CustomRendererType = {
 
         return generateCheckboxRenderer(text, {
             openingTag: `<h${level} class="rendered-heading rendered-heading-${level} rendered-checkbox-text">`,
-            closingTag: `</h${level}>`
+            closingTag: `</h${level}>`,
+            defaultTag: `<h${level} class="rendered-heading rendered-heading-${level}">`
         })
 
     },
@@ -23,10 +24,11 @@ const customRenderer: Renderer & any & CustomRendererType = {
     },
     paragraph(text: string) {
 
-
         return generateCheckboxRenderer(text, {
-            openingTag: '<b class="rendered-checkbox-text">',
-            closingTag: '</b>'
+            openingTag: '<p class="rendered-checkbox-text">',
+            closingTag: '</p>',
+
+            defaultTag: '<p class="rendered-paragraph">'
         })
 
     }

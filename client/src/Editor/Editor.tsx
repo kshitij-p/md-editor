@@ -10,7 +10,7 @@ const EditorDiv = styled.div`
 
     display: flex;
 
-    background-color: hsl(0, 0%, 3%);
+    background-color: hsl(0, 0%, 0%);
     z-index: 1;
     position: relative;
 

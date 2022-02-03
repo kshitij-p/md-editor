@@ -1,23 +1,33 @@
 import React, { useContext, useEffect, } from 'react';
 import styled from 'styled-components';
-import { marked } from 'marked';
-import customRenderer from '../utils/marked/customRenderer'
 import { EditorContext } from './EditorContext';
 import CodeMirrorEditor from './CodeMirrorEditor';
 
 
 const EditorInputAreaDiv = styled.div`
     width: 100%;
-    
+    min-height: 100vh;
+
     display: flex;
     flex-direction: column;
 
     .menubar {
-        height: 5%;
+        height: 1em;
         background-color: hsla(0, 0%, 90%, 0.2);
     }
 
-    
+    .inputarea-wrapper {
+        height: 95%;
+        width: 100%;
+
+        display: flex;
+        /* Change me for different dock mode */
+        flex-direction: column;
+
+        flex-grow: 1;
+
+        position: relative;
+    }
 `
 
 type RenderedTextDivProps = {
@@ -26,13 +36,16 @@ type RenderedTextDivProps = {
 
 
 const RenderedTextDiv = styled.div<RenderedTextDivProps>`
-    height: 100%;
     width: 100%;
 
-    background-color: hsla(0, 0%, 10%, 0.1);
+    /* Padding for our splitter */
+    padding-top: 5px; /* CHange me when orientatiobn changes */
+
+    background-color: hsla(0, 0%, 70%, 0.1);
 
     font-size: 2em;
     font-weight: 300;
+    white-space: pre-wrap;
 
     /* For hide option */
     /* visibility: ${props => !props.textEditorOpen ? 'visible' : 'hidden'};
@@ -43,8 +56,11 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     overflow-y: scroll;
     scrollbar-width: none;
 
+    
+    transition: 0.1s;
+
     ::-webkit-scrollbar {
-        display: none;
+
     }
 
     .rendered-heading-1 {
@@ -131,6 +147,11 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
         
         height: 1em;
         width: 1em;
+
+        /* For centering */
+        top: 0.1em;
+
+        
         display: inline-block;
         
         background-color: var(--bg-color);
@@ -156,6 +177,56 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
 `
 
 
+const CodeMirrorEditorPane = styled.div`
+    /* Temp height */
+    position: relative;
+    transition: 0.1s;
+`
+
+
+const PaneSplitterDiv = styled.div`
+    border: none;
+    outline: none;
+    position: absolute;
+
+    height: 5px;
+    width: 100%;
+
+    
+    background-color: hsla(0, 0%, 100%, 0.35);
+
+    box-shadow: 0px 0px 8px hsla(0, 0%, 100%, 0.2);
+    backdrop-filter: blur(25px);
+
+    transition: 0.1s;
+    z-index: 999999;
+
+
+    div.pane-splitter-thumb {
+        position: absolute;
+        content: '';
+        left: 50%;
+
+        height: 20px;
+        width: 20px;
+
+        margin-top: -8px;
+        margin-left: -20px;
+
+        border-radius: 50%;
+        background-color: hsla(0, 0%, 100%, 1);
+        box-shadow: 0px 0px 8px hsla(0, 0%, 90%, 0.3);
+        
+        backdrop-filter: blur(25px);
+
+        z-index: 9999;
+        cursor: grab;
+    }
+`
+
+
+let timeoutID: ReturnType<typeof setTimeout>;
+
 const EditorInputArea: React.FC = () => {
 
 
@@ -170,6 +241,61 @@ const EditorInputArea: React.FC = () => {
 
     }
 
+    const onSplitterClick = () => {
+        editorFunctions.setInEditorMode(false);
+    }
+
+    const onSplitterDragStart = (event: any) => {
+
+      /*   event.dataTransfer.effectAllowed = "none";
+        event.dataTransfer.dropEffect = "none";
+ */
+        let newGhostImg: HTMLDivElement = event.target.parentElement;
+
+        if (!newGhostImg) {
+            return
+        }
+
+
+        editorFunctions.setIsDraggingSplitter(true);
+        event.dataTransfer.setDragImage(newGhostImg, Math.round(newGhostImg.clientWidth / 2), 0);
+    }
+
+    const onSplitterDrag = (event: any) => {
+        if (!event.clientY) {
+            return;
+        }
+
+        let newY = event.clientY;
+
+        let totalEditorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
+
+        if (totalEditorHeight) {
+
+            let newHeight = Math.round((newY * 100) / totalEditorHeight);
+            console.log({ newHeight });
+
+            if (Math.abs(newHeight - editor.editorHeight) >= 2) {
+
+                editorFunctions.setEditorHeight(newHeight);
+                console.log(event);
+                console.log(event.target.getBoundingClientRect());
+
+            }
+        }
+
+
+
+
+
+    }
+
+    const onSplitterDragEnd = () => {
+        editorFunctions.setIsDraggingSplitter(false);
+        console.log('meow');
+    }
+
+    /* Focus and blur editor whenever inEditorMode changes */
     useEffect(() => {
 
         if (editor.inEditorMode) {
@@ -182,9 +308,43 @@ const EditorInputArea: React.FC = () => {
             }
         }
 
-    }, [editor.inEditorMode])
+    }, [editor.inEditorMode, editor.editorRef])
 
-    
+    /* Parse text i.e. parsed using marked and then setRenderedText to it whenever editorTextValue changes */
+    useEffect(() => {
+        editorFunctions.parseEditorText();
+    }, [editor.editorTextValue])
+
+    /* Append new content to renderedVIew whenever renderedText updates */
+    useEffect(() => {
+
+        if (renderedView.renderedViewDivRef.current) {
+            console.log(renderedView.renderedTextValue);
+            renderedView.renderedViewDivRef.current.innerHTML = renderedView.renderedTextValue;
+        }
+
+    }, [renderedView.renderedTextValue, renderedView.renderedViewDivRef])
+
+    /* Set max heights to avoid overflows */
+    useEffect(() => {
+
+        let editorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
+
+        if (editorHeight && editor.editorPaneRef.current && renderedView.renderedViewDivRef.current) {
+            console.log({ editorHeight });
+            let maxHeight = editorHeight * (editor.editorHeight / 100);
+            editor.editorPaneRef.current.style.maxHeight = `${maxHeight}px`;
+
+            editor.editorPaneRef.current.style.maxHeight = `${maxHeight}px`;
+
+            renderedView.renderedViewDivRef.current.style.maxHeight = `${editorHeight - maxHeight >= 10 ? editorHeight - maxHeight : 10}px`
+
+        }
+
+    }, [editor.editorPaneRef, editor.editorHeight, renderedView.renderedViewDivRef])
+
+    /* Fix body cursor incase something goes wrong (different drop zones can potentially cause problems) */
+
 
     return (
         <EditorInputAreaDiv>
@@ -192,16 +352,29 @@ const EditorInputArea: React.FC = () => {
 
             </div>
 
-            
+            <div className='inputarea-wrapper'>
 
-                <CodeMirrorEditor />
+
+                <CodeMirrorEditorPane ref={editor.editorPaneRef}
+                    className='CodeMirrorEditorPane' style={{ height: `${editor.editorHeight}%`, cursor: `${editor.isDraggingSplitter ? 'grabbing' : 'auto'}` }}>
+
+                    <CodeMirrorEditor />
+                </CodeMirrorEditorPane>
+
+                <PaneSplitterDiv tabIndex={3} draggable={true} className='PaneSplitterDiv'
+                    style={{ top: `${editor.editorHeight}%` }}>
+                    <div className='pane-splitter-thumb' onDrag={onSplitterDrag} onDragStart={onSplitterDragStart}
+                        onDragEnd={onSplitterDragEnd}
+                        draggable={true} onClick={onSplitterClick}></div>
+                </PaneSplitterDiv>
 
                 <RenderedTextDiv tabIndex={2} onClick={openEditorOnClick} ref={renderedView.renderedViewDivRef}
-                    textEditorOpen={editorState.editor.inEditorMode} >
+                    textEditorOpen={editorState.editor.inEditorMode} style={{ height: `${(100 - editor.editorHeight) || 50}%`, cursor: `${editor.isDraggingSplitter ? 'grabbing' : 'auto'}` }}
+                    className='RenderedTextPane'>
                 </RenderedTextDiv>
-           
-            
 
+
+            </div>
 
 
 
