@@ -159,27 +159,27 @@ const ExplorerFileDiv = styled.div`
 const ExplorerFile = () => {
 
     const controlButtonRef = useRef<HTMLDivElement>(null);
-    
+
     const menuRef = useRef<HTMLDivElement>(null);
     const [menuOpen, setMenuOpen] = useState(false);
-    
+
     const onControlClick = () => {
         setMenuOpen(true);
     }
 
-    const handleRenameFile = ()=>{
+    const handleRenameFile = () => {
         console.log('renaming')
     }
 
-    const handleDeleteFile = ()=>{
+    const handleDeleteFile = () => {
         console.log('deleting');
     }
 
-    useEffect(()=>{
+    useEffect(() => {
 
-        const hideOnOutsideClick = (e: MouseEvent & {target: any})=>{
-            if(menuRef.current && controlButtonRef.current){
-                if(!menuRef.current.contains(e.target) && !controlButtonRef.current.contains(e.target)){
+        const hideOnOutsideClick = (e: MouseEvent & { target: any }) => {
+            if (menuRef.current && controlButtonRef.current) {
+                if (!menuRef.current.contains(e.target) && !controlButtonRef.current.contains(e.target)) {
 
                     setMenuOpen(false);
                 }
@@ -188,7 +188,7 @@ const ExplorerFile = () => {
 
         document.addEventListener('click', hideOnOutsideClick);
 
-        return function cleanup(){
+        return function cleanup() {
             document.removeEventListener('click', hideOnOutsideClick);
         }
 
@@ -210,15 +210,15 @@ const ExplorerFile = () => {
 
             </div>
 
-            <div className="control-menu" style={{opacity: menuOpen ? '1' : '0', visibility: menuOpen ? 'visible' : 'hidden'}}
-            ref={menuRef}>
+            <div className="control-menu" style={{ opacity: menuOpen ? '1' : '0', visibility: menuOpen ? 'visible' : 'hidden' }}
+                ref={menuRef}>
                 <div className="option" onClick={handleRenameFile}>
                     <b>Rename File</b>
-                    
+
                 </div>
                 <div className="option" onClick={handleDeleteFile}>
                     <b>Delete File</b>
-                    
+
                 </div>
             </div>
 
@@ -244,10 +244,82 @@ const FileList = styled.div`
    
 `
 
+const ExplorerControlsDiv = styled.div`
+    
+    
+    
+    margin-bottom: 1.25em;
+    
+    display: flex;
+
+
+    .search-bar  {
+        
+        width: 80%;
+        padding: 0.25em 1em;
+        margin-left: 1em;
+
+        background: rgba(138, 138, 138, 0.3);
+        border-radius: 500px;
+
+        display: flex;
+        align-items: center;
+
+        box-shadow: 0px 0px 14px 0px hsla(0, 0%, 0%);
+
+        img {
+            width: 1.25em;
+        }
+
+        input {
+
+            outline: none;
+            border: none;
+
+            width: 100%;
+            padding-left: 0.45em;
+
+            background-color: transparent;
+
+            color: hsl(0, 0%, 80%);
+
+            font-size: 24px;
+        }
+    }
+
+    .add-btn {
+        margin-left: auto;
+
+        opacity: 0.5;
+        
+        transition: 0.15s ease-in-out;
+        cursor: pointer;
+
+        :hover {
+            opacity: 1;
+        }
+    }
+    
+`
+
 const EditorFileExplorer: React.FC = (props) => {
     return (
         <>
             <EditorFileExplorerDiv>
+
+                <ExplorerControlsDiv>
+
+                    <div className="search-bar">
+                        <img src="searchicon.svg" alt="" />
+                        <input type="text"  />
+                    </div>
+
+                    <div className="add-btn">
+                        <img src="plusicon.svg" alt="create document button" />
+                    </div>
+
+                </ExplorerControlsDiv>
+
                 <FileList>
                     <ExplorerFile />
                     <ExplorerFile />

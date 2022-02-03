@@ -32,7 +32,6 @@ const getUserFiles = async (userid) => {
 
         })
     })
-    console.log({ files });
     return files
 }
 
