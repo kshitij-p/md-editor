@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './reset.css'
 import styled from 'styled-components'
 import Editor from './Editor/Editor';
@@ -7,6 +7,7 @@ import { Route, Routes } from 'react-router-dom';
 import FileTest from './fileTest';
 import Login from './Auth/Login';
 import Register from './Auth/Register';
+import Logout from './Auth/Logout';
 
 const AppDiv = styled.div`
  
@@ -15,7 +16,7 @@ const AppDiv = styled.div`
 const App: React.FC = () => {
 
   
-
+  
   return (
     <EditorContextProvider>
       <AppDiv>
@@ -25,6 +26,7 @@ const App: React.FC = () => {
         <Route path="/test" element={<FileTest />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/logout" element={<Logout />} />
         </Routes>
 
       </AppDiv>

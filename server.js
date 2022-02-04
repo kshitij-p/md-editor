@@ -92,20 +92,49 @@ mongoose.connect('mongodb://localhost:27017/mdeditor').then(() => {
 app.use(userRouter);
 
 app.post('/api/parsefile', upload.single('file'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({
-            message: "Invalid file type or file size too long",
 
-        })
+   
+
+    /* If uploading files, uploadingFile header must be added to the request */
+    let isUploading = req.headers['uploading-file'].toLowerCase() === 'true';
+
+    console.log({isUploading});
+
+    if (isUploading) {
+
+        if (!req.file) {
+            return res.status(400).json({
+                message: "File missing or invalid file type or file size too big",
+
+            })
+        }
+    } else {
+        if (!req.body.path) {
+            return res.status(400).json({
+                message: "File path missing",
+
+            })
+        }
     }
 
     let parsedFile;
 
     try {
-        parsedFile = matter.read(req.file.path);
+
+        if (isUploading) {
+
+            parsedFile = matter.read(req.file.path);
+
+        } else {
+            parsedFile = matter.read(req.body.path);
+        }
+
     } catch (e) {
 
-        await fs.promises.rm(req.file.path, { force: true });
+        if (isUploading) {
+
+            await fs.promises.rm(req.file.path, { force: true });
+        }
 
         return res.status(400).json({
             message: "Couldn't parse the given file, something went wrong",
@@ -113,13 +142,16 @@ app.post('/api/parsefile', upload.single('file'), async (req, res) => {
         })
     }
 
-    await fs.promises.rm(req.file.path, { force: true });
+    if (isUploading) {
+
+        await fs.promises.rm(req.file.path, { force: true });
+
+    }
 
     return res.status(200).json(parsedFile);
 
 })
 
-app.get('/get')
 
 app.listen(port, (e) => {
     console.log('Listening to port 8080')

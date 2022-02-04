@@ -15,9 +15,15 @@ const Register: React.FC = (props) => {
         setPassword(e.currentTarget.value);
     }
 
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>)=>{
+        if(!password || !username){
+            e.preventDefault();
+        }
+    }
+
     return (
         <>
-            <form method='POST' action='/api/register'>
+            <form method='POST' action='/api/register' onSubmit={handleSubmit}>
 
                 <input type="text" value={username} onChange={handleChangeUsername} name="email" />
                 <input type="password" value={password} onChange={handleChangePassword} name="password" />

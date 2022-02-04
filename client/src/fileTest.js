@@ -1,28 +1,37 @@
-import React from 'react';
+import React, { useRef } from 'react';
+
+const path = require('path-browserify');
 
 const FileTest = () => {
 
+    const fileRef = useRef(null);
+
     const fileReady = async (e) => {
-
-        if (!e.target.files.length) {
-            return
-        }
-
         
         let formData = new FormData();
 
+        if(fileRef.current.files.length){
 
-        formData.append('file', e.target.files[0]);
+            formData.append('file', fileRef.current.files[0]);
+        } else {
+            formData.append('path', path.join('public', 'README.md'));
+        }
 
+        console.log(path.join('public', 'README.md'))
 
-        let request = await fetch('/api/parsefile', { method: "POST", body: formData, });
+        let headers = new Headers();
+        headers.append('uploading-file', fileRef.current.files.length > 0);
+
+        let request = await fetch('/api/parsefile', { method: "POST", body: formData, headers: headers});
         let response = await request.json();
         console.log({ response });
 
     }
 
     return <div>
-        <input type="file" onChange={fileReady} multiple={false} accept=".md, .txt" />
+        <input type="file" multiple={false} accept=".md, .txt" ref={fileRef} />
+
+        <button onClick={fileReady}>Send</button>
     </div>;
 };
 
