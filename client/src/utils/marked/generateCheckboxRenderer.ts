@@ -1,8 +1,14 @@
-const generateCheckboxRenderer = (text: string, outputTag: 
-    { openingTag: string, closingTag: string, defaultTag: string }
-    ,) => {
-    /* Check match */
+
+/* RETURN FALSE RETURNS DEFAULT */
+
+const generateCheckboxRenderer = (text: string, htmlTag: {
+    opening: string, closing: string,
+    default: string
+}, additionalClasses: string) => {
+
     const rule = /\[[ |x]\]/g;
+
+    /* Check match */
     if (text.match(rule)) {
 
         let checkboxIndexes: any = {};
@@ -15,43 +21,43 @@ const generateCheckboxRenderer = (text: string, outputTag:
             }
         }
 
-        let generatedHtml = '';
         let word = '';
-        
+        let generatedHtml = '';
 
         for (let i = 0; i < text.length; i++) {
-            
             if (checkboxIndexes[i]) {
-                generatedHtml += outputTag.openingTag + word + outputTag.closingTag;
+
+                generatedHtml += word;
                 word = '';
 
                 let ticked = checkboxIndexes[i].ticked;
 
-                generatedHtml += `<div class="rendered-checkbox" style="--bg-color: ${ticked
-                    ? 'hsl(207, 90%, 64%)'
+                generatedHtml += `<div class="rendered-checkbox" style="--bg-color: ${ticked ? 'hsl(207, 90%, 64%)'
                     :
-                    'white'};--bg-border: ${!ticked ? '2px solid black' : ''} ">${ticked ? '<img src="/tickmark.svg" class="tickmark-svg" />' : ''}</div>`;
+                    'white'}; --bg-boxshadow: ${!ticked ? 'inset 0px 0px 3px black' : ''}">${ticked ? '<img src="/tickmark.svg" class="tickmark-svg" />' : ''}</div>`
 
                 i += 2;
-                
+
             } else {
+                word += text[i];
                 if (i === text.length - 1) {
-                    generatedHtml += outputTag.openingTag + word + outputTag.closingTag;
-                    word = '';
-                } else {
-                    word += text[i];
+                    generatedHtml += word;
                 }
-            };
+            }
         }
 
-        return generatedHtml; 
+        generatedHtml = `<div class="${additionalClasses} ">` + generatedHtml + '<p>\n</p></div>';
+
+        return generatedHtml;
 
     } else {
 
-        return `${outputTag.defaultTag}${text}${outputTag.closingTag}`
+        return htmlTag.default + text + htmlTag.closing;
     }
-    
+
 
 }
+
+
 
 export default generateCheckboxRenderer;

@@ -8,7 +8,7 @@ type EditorContextState = {
         inEditorMode: boolean;
         editorTextValue: string;
         editorHeight: number;
-        
+
         editorRef: RefObject<any>;
 
         editorPaneRef: RefObject<HTMLDivElement>;
@@ -30,21 +30,21 @@ type EditorContextType = {
 
         setRenderedTextValue: Function;
         parseEditorText: Function;
-        
+
         setIsDraggingSplitter: Function;
     },
-    
+
 }
 
 const EditorContext = createContext({} as EditorContextType);
 
 
-marked.use({ renderer: customRenderer, breaks: true, gfm: true});
+marked.use({ renderer: customRenderer, breaks: true, gfm: true });
 
 
 const EditorContextProvider: React.FC = (props) => {
 
-    
+
 
     const [inEditorMode, setInEditorMode] = useState(false);
     const [editorTextValue, setEditorTextValue] = useState('');
@@ -59,12 +59,10 @@ const EditorContextProvider: React.FC = (props) => {
 
     const [isDraggingSplitter, setIsDraggingSplitter] = useState(false);
 
-    const parseEditorText = ()=>{
-        let replacedBreaks = editorTextValue.replace(/\n(?=\n)/g, "<br>");
-        let parsed = marked.parse(replacedBreaks);
-        console.log({parsed});
+    const parseEditorText = () => {
+        let parsed = marked.parse(editorTextValue);
         setRenderedTextValue(parsed);
-    }    
+    }
 
     const state: EditorContextState = {
         editor: {
@@ -83,9 +81,9 @@ const EditorContextProvider: React.FC = (props) => {
 
     }
 
-    const editorFunctions = { setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue, parseEditorText, setIsDraggingSplitter};
-    
-    useEffect(()=>{
+    const editorFunctions = { setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue, parseEditorText, setIsDraggingSplitter };
+
+    useEffect(() => {
         let newText = sampleResponse;
 
         setEditorTextValue(newText);

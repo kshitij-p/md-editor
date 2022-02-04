@@ -14,7 +14,7 @@ const EditorDiv = styled.div`
     z-index: 1;
     position: relative;
 
-    color: white;
+    color: hsl(0, 0%, 85%);
 `
 
 

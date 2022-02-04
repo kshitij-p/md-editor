@@ -40,7 +40,7 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     width: 100%;
 
     /* Padding for our splitter */
-    padding-top: calc(5px + 1em); /* Change me when orientatiobn changes */
+    padding-top: 5px ; /* Change me when orientatiobn changes */
     
     padding-left: 1em;
 
@@ -66,27 +66,55 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
 
     }
 
+    p {
+        margin: 1em 0;
+        font-weight: 200;
+    }
+
+    strong {
+        font-weight: 500;
+    }
+
+    em {
+        font-style: italic;
+    }
+
+    code {
+        background-color: hsl( 0,0%, 30%);
+        border-radius: 10px;
+        height: max-content;
+        padding: 0.25em;
+        line-height: 170%;
+    }
+
+    .rendered-heading {
+        margin: 1.8em 0;
+    }
+
     .rendered-heading-1 {
         font-size: 1.6em;
+        font-weight: 700;
     }
 
-    h2.rendered-heading-2 {
+    .rendered-heading-2 {
         font-size: 1.5em;
+        font-weight: 500;
     }
 
-    h3.rendered-heading-3 {
+    .rendered-heading-3 {
         font-size: 1.4em;
+        font-weight: 400;
     }
 
-    h4.rendered-heading-4 {
+    .rendered-heading-4 {
         font-size: 1.3em;
     }
 
-    h5.rendered-heading-5 {
+    .rendered-heading-5 {
         font-size: 1.2em;
     }
 
-    h6.rendered-heading-6 {
+    .rendered-heading-6 {
         font-size: 1.1em;
     }
 
@@ -145,7 +173,6 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     }
     
 
-
     div.rendered-checkbox {
         
         height: 1em;
@@ -158,24 +185,20 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
         display: inline-block;
         
         background-color: var(--bg-color);
+        border-radius: 5px;
+
+        box-shadow: var(--bg-boxshadow);
+
         position: relative;
         
-        border: var(--bg-border);
-
         .tickmark-svg {
             position: absolute;
             inset: 0 0 0 0;
             width: 100%;
         }
     }
-
-    .rendered-checkbox-text {
-        display: inline;
-    }
-
-    b.rendered-checkbox-text {
-        white-space: pre-wrap;
-    }
+     
+   
 
 `
 
@@ -227,9 +250,6 @@ const PaneSplitterDiv = styled.div`
     }
 `
 
-
-let timeoutID: ReturnType<typeof setTimeout>;
-
 const EditorInputArea: React.FC = () => {
 
 
@@ -250,7 +270,7 @@ const EditorInputArea: React.FC = () => {
 
     const onSplitterDragStart = (event: any) => {
 
-      
+
         let newGhostImg: HTMLDivElement = event.target.parentElement;
 
         if (!newGhostImg) {
@@ -274,13 +294,12 @@ const EditorInputArea: React.FC = () => {
         if (totalEditorHeight) {
 
             let newHeight = Math.round((newY * 100) / totalEditorHeight);
-            console.log({ newHeight });
+
 
             if (Math.abs(newHeight - editor.editorHeight) >= 2) {
 
                 editorFunctions.setEditorHeight(newHeight);
-                console.log(event);
-                console.log(event.target.getBoundingClientRect());
+
 
             }
         }
@@ -319,7 +338,6 @@ const EditorInputArea: React.FC = () => {
     useEffect(() => {
 
         if (renderedView.renderedViewDivRef.current) {
-            console.log(renderedView.renderedTextValue);
             renderedView.renderedViewDivRef.current.innerHTML = renderedView.renderedTextValue;
         }
 
@@ -331,7 +349,6 @@ const EditorInputArea: React.FC = () => {
         let editorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
 
         if (editorHeight && editor.editorPaneRef.current && renderedView.renderedViewDivRef.current) {
-            console.log({ editorHeight });
             let maxHeight = editorHeight * (editor.editorHeight / 100);
             editor.editorPaneRef.current.style.maxHeight = `${maxHeight}px`;
 
@@ -344,18 +361,18 @@ const EditorInputArea: React.FC = () => {
     }, [editor.editorPaneRef, editor.editorHeight, renderedView.renderedViewDivRef])
 
 
-    const onTouchStart = (event: any)=>{
+    const onTouchStart = (event: any) => {
         event.preventDefault();
-       /*  document.body.style.overflow = 'hidden'; */
-      /*   document.body.style.touchAction = 'none'; */
+        /*  document.body.style.overflow = 'hidden'; */
+        /*   document.body.style.touchAction = 'none'; */
     }
 
-    const onTouchMove = (event: any)=>{
+    const onTouchMove = (event: any) => {
         event.preventDefault();
         if (!event.targetTouches.length) {
             return;
         }
-        
+
 
         let newY = event.targetTouches[0].clientY;
 
@@ -364,22 +381,19 @@ const EditorInputArea: React.FC = () => {
         if (totalEditorHeight) {
 
             let newHeight = Math.round((newY * 100) / totalEditorHeight);
-            console.log({ newHeight });
 
             if (Math.abs(newHeight - editor.editorHeight) >= 2) {
 
                 editorFunctions.setEditorHeight(newHeight);
-                console.log(event);
-                console.log(event.target.getBoundingClientRect());
 
             }
         }
 
     }
 
-    const onTouchEnd = ()=>{
-       /*  document.body.style.overflow = ''; */
-       /*  document.body.style.touchAction = ''; */
+    const onTouchEnd = () => {
+        /*  document.body.style.overflow = ''; */
+        /*  document.body.style.touchAction = ''; */
     }
 
     return (
