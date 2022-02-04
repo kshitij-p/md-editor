@@ -92,6 +92,12 @@ mongoose.connect('mongodb://localhost:27017/mdeditor').then(() => {
 
 app.use(userRouter);
 
+app.get('/api/isLogged', isLogged, async(req, res)=>{
+    return res.status(200).json({
+        message: "You are logged in"
+    })
+})
+
 app.get('/api/me', isLogged, async (req, res) => {
     let user = await User.findById(req.user._id).populate('files');
 

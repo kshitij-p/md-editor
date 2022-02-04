@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import CreateRenameDiag from "./Dialogs/CreateRenameDiag";
 
 const EditorFileExplorerDiv = styled.div`
     width: 30%;
@@ -307,6 +308,24 @@ const ExplorerControlsDiv = styled.div`
 `
 
 const EditorFileExplorer: React.FC = (props) => {
+
+    const [isRenaming, setIsRenaming] = useState(false);
+
+    const [createRenameDiagOpen, setCreateRenameDiagOpen] = useState(false);
+
+    const closeCreateRenameDiag = ()=>{
+        setCreateRenameDiagOpen(false);
+    }
+
+    const openCreateRenameDiag = ()=>{
+        setCreateRenameDiagOpen(true);
+    }
+
+    const handleAddOnClick = ()=>{
+        openCreateRenameDiag();
+        setIsRenaming(false);
+    }
+
     return (
         <>
             <EditorFileExplorerDiv>
@@ -318,12 +337,12 @@ const EditorFileExplorer: React.FC = (props) => {
                         <input type="text"  />
                     </div>
 
-                    <button className="add-btn" aria-label="Create new document button">
+                    <button className="add-btn" aria-label="Create new document button" onClick={handleAddOnClick}>
                         <img src="plusicon.svg" alt="plus icon" />
                     </button>
 
                 </ExplorerControlsDiv>
-
+                
                 <FileList>
                     <ExplorerFile />
                     <ExplorerFile />
@@ -336,6 +355,9 @@ const EditorFileExplorer: React.FC = (props) => {
                     <ExplorerFile />
                     <ExplorerFile />
                 </FileList>
+
+                <CreateRenameDiag renaming={isRenaming} editingID={null} show={createRenameDiagOpen} onHide={closeCreateRenameDiag} />
+
             </EditorFileExplorerDiv>
         </>
     )
