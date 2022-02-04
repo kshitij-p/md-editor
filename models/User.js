@@ -4,7 +4,6 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-
         unique: true
 
     },
@@ -13,12 +12,7 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     files: {
-        type: [
-            {
-                name: String,
-                path: String
-            }
-        ]
+        type: [{type: mongoose.Schema.Types.ObjectId, ref: 'MDFile'}]
 
     }
 

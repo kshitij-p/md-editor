@@ -19,7 +19,7 @@ userRouter.post('/api/register', alreadyLoggedIn, async (req, res) => {
 
     let { email, password: plainPassword } = req.body;
 
-    if(!email || plainPassword){
+    if(!email || !plainPassword){
         return res.redirect('/register');
     }
 
@@ -31,7 +31,7 @@ userRouter.post('/api/register', alreadyLoggedIn, async (req, res) => {
         await user.save();
     } catch (e) {
 
-        if (e.code == 11000 && e.index === 0) {
+        if (e.code == 11000) {
             return res.redirect('/register');
         }
 
