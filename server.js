@@ -110,7 +110,7 @@ app.get('/api/me', isLogged, async (req, res) => {
 
 app.post('/api/parsefile', upload.single('file'), async (req, res) => {
 
-
+    
 
     /* If uploading files, uploadingFile header must be added to the request */
 

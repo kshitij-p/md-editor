@@ -81,6 +81,9 @@ class CodeMirrorEditor extends React.PureComponent {
 
     handleBeforeChange = (event: ChangeEvent, data: any, value: string) => {
         this.context.editorFunctions.setEditorTextValue(value);
+        if(this.context.editorState.editor.isUnsaved !== true){
+            this.context.editorFunctions.setIsUnsaved(true);
+        }
     }
 
     handleOnBlur = (cmInstance: CodeMirror, event: InputEvent) => {

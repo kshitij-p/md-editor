@@ -5,6 +5,9 @@ const isLogged = require('../utils/isLogged');
 const isValidFileName = require('../utils/isValidFileName');
 const filesRouter = express.Router();
 
+const path = require('path');
+
+const fs = require('fs');
 
 
 filesRouter.get('/api/files', isLogged, async (req, res) => {
@@ -18,7 +21,7 @@ filesRouter.get('/api/files', isLogged, async (req, res) => {
 
 filesRouter.post('/api/files', isLogged, async (req, res) => {
 
-    let { name } = req.body;
+    let { name, fileData } = req.body;
 
     if (!name) {
         return res.status(400).json({
@@ -39,6 +42,12 @@ filesRouter.post('/api/files', isLogged, async (req, res) => {
         newFile = new MDFile({ name: name, author: req.user._id });
         await newFile.save();
 
+        let filePath = path.join(process.cwd(), 'public', 'userfiles', req.user._id.toString(), name + '.md')
+
+        await fs.promises.writeFile(filePath, fileData || '', { flag: 'wx' });
+
+
+
     } catch (e) {
 
         if (e.code == 11000) {
@@ -46,7 +55,7 @@ filesRouter.post('/api/files', isLogged, async (req, res) => {
                 message: "No duplicate file names allowed"
             })
         }
-
+                
         return res.status(500).json({ message: "Couldnt create file", error: e });
     }
 
@@ -125,6 +134,28 @@ filesRouter.put('/api/files/:id', isLogged, async (req, res) => {
 
 })
 
+filesRouter.patch('/api/files/:id', isLogged, async (req, res) => {
+
+    let { fileData } = req.body;
+
+    if (!fileData) {
+        return res.status(400).json({ message: "Missing fileData in request body" })
+    }
+
+    let saved = await new Promise((resolve, reject) => {
+        fs.writeFile('path', data, { flag: 'r+' }, (e) => {
+            if (e) {
+                resolve(e);
+            }
+            resolve(true);
+        })
+    })
+
+    if (saved !== true) {
+        return res.status(400).json({ message: "Coulnd't save", error: e })
+    }
+})
+
 filesRouter.delete('/api/files/:id', isLogged, async (req, res) => {
 
     let { id } = req.params;
@@ -156,5 +187,7 @@ filesRouter.delete('/api/files/:id', isLogged, async (req, res) => {
     })
 
 })
+
+
 
 module.exports = filesRouter;

@@ -1,5 +1,7 @@
 import { marked } from "marked";
-import { createContext, RefObject, useEffect, useRef, useState } from "react";
+import { createContext, RefObject, useContext, useEffect, useRef, useState } from "react";
+import { AuthContext } from "../Auth/AuthContext";
+import defaultMDFile from "../utils/defaultMDFile";
 import customRenderer from "../utils/marked/customRenderer";
 import { sampleResponse } from "../utils/sampleResponse";
 import { MDFile } from "../utils/types";
@@ -13,8 +15,11 @@ type EditorContextState = {
         editorRef: RefObject<any>;
 
         editorPaneRef: RefObject<HTMLDivElement>;
-
         isDraggingSplitter: boolean;
+
+        currOpenFile: MDFile;
+        isUnsaved: boolean;
+        notSavedDiagOpen: boolean;
     },
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
@@ -42,6 +47,17 @@ type EditorContextType = {
         createFile: Function;
         renameFile: Function;
         deleteFile: Function;
+
+        setCurrOpenFile: Function;
+        clearEditorForNewFile: Function;
+
+        createNewEditorFile: Function;
+        saveCurrentOpenFile: Function;
+        downloadCurrentOpenFile: Function;
+
+        setIsUnsaved: Function;
+        setNotSavedDiagOpen: Function;
+        closeNotSavedDiag: Function & any;
     },
 
 }
@@ -54,7 +70,7 @@ marked.use({ renderer: customRenderer, breaks: true, gfm: true });
 
 const EditorContextProvider: React.FC = (props) => {
 
-
+    const { isLoggedIn } = useContext(AuthContext);
 
     const [inEditorMode, setInEditorMode] = useState(false);
     const [editorTextValue, setEditorTextValue] = useState('');
@@ -70,6 +86,12 @@ const EditorContextProvider: React.FC = (props) => {
     const [isDraggingSplitter, setIsDraggingSplitter] = useState(false);
 
     const [editorFiles, setEditorFiles] = useState([]);
+
+    const [currOpenFile, setCurrOpenFile] = useState(defaultMDFile);
+
+    const [isUnsaved, setIsUnsaved] = useState(false);
+    const [notSavedDiagOpen, setNotSavedDiagOpen] = useState(false);
+
 
     const parseEditorText = () => {
         let parsed = marked.parse(editorTextValue);
@@ -94,6 +116,7 @@ const EditorContextProvider: React.FC = (props) => {
 
         let requestBody = new URLSearchParams();
         requestBody.append('name', fileName);
+        requestBody.append('fileData', editorTextValue);
 
         let request = await fetch('/api/files', { method: "POST", body: requestBody });
 
@@ -110,25 +133,69 @@ const EditorContextProvider: React.FC = (props) => {
         let requestBody = new URLSearchParams();
         requestBody.append('name', fileName);
 
-        let request = await fetch(`/api/files/${fileID}`, {method: "PUT", body: requestBody});
+        let request = await fetch(`/api/files/${fileID}`, { method: "PUT", body: requestBody });
 
-        if(request.status === 200 && !request.redirected){
+        if (request.status === 200 && !request.redirected) {
             fetchUserFiles();
         }
     }
 
-    const deleteFile = async(fileID: string)=>{
-        if(!fileID){
+    const deleteFile = async (fileID: string) => {
+        if (!fileID) {
             return;
         }
 
-        let request = await fetch(`/api/files/${fileID}`, {method: "DELETE"});
+        let request = await fetch(`/api/files/${fileID}`, { method: "DELETE" });
 
-        if(request.status === 200 && !request.redirected){
+        if (request.status === 200 && !request.redirected) {
             fetchUserFiles();
         }
 
     }
+
+    const closeNotSavedDiag = ()=>{
+        setNotSavedDiagOpen(false);
+    }
+    
+    const clearEditorForNewFile = () => {
+        setCurrOpenFile(defaultMDFile);
+        setEditorTextValue('');
+        setIsUnsaved(false);
+    }
+
+    const saveCurrentOpenFile = () => {
+        if (isLoggedIn) {
+            console.log('is saving');
+        } else {
+            /* Download file */
+        }
+
+        setIsUnsaved(false);
+    }
+
+    const createNewEditorFile = () => {
+        if(isUnsaved){
+            setNotSavedDiagOpen(true);
+            return;
+        }
+        saveCurrentOpenFile();
+        clearEditorForNewFile();
+    }
+
+    const downloadCurrentOpenFile = () => {
+        let link = document.createElement('a');
+        link.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(editorTextValue));
+        link.setAttribute('download', currOpenFile.name + '.md');
+
+        link.style.display = 'none';
+        document.body.appendChild(link);
+
+        link.click();
+        link.remove();
+
+
+    }
+
 
     const state: EditorContextState = {
         editor: {
@@ -139,6 +206,10 @@ const EditorContextProvider: React.FC = (props) => {
             editorRef,
             editorPaneRef,
             isDraggingSplitter,
+
+            currOpenFile,
+            isUnsaved,
+            notSavedDiagOpen,
         },
         renderedView: {
             renderedViewDivRef,
@@ -153,7 +224,12 @@ const EditorContextProvider: React.FC = (props) => {
     const editorFunctions = {
         setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue,
         parseEditorText, setIsDraggingSplitter,
-        setEditorFiles, fetchUserFiles, createFile, renameFile, deleteFile
+        setEditorFiles, fetchUserFiles, createFile, renameFile, deleteFile,
+        setCurrOpenFile,
+        clearEditorForNewFile, createNewEditorFile, saveCurrentOpenFile, downloadCurrentOpenFile,
+        setIsUnsaved,
+        setNotSavedDiagOpen,
+        closeNotSavedDiag
     };
 
     useEffect(() => {

@@ -2,6 +2,8 @@ import React, { useContext, useEffect, } from 'react';
 import styled from 'styled-components';
 import { EditorContext } from './EditorContext';
 import CodeMirrorEditor from './CodeMirrorEditor';
+import { AuthContext } from '../Auth/AuthContext';
+import NotSavedDiag from './Dialogs/NotSavedDiag';
 
 
 const EditorInputAreaDiv = styled.div`
@@ -12,8 +14,19 @@ const EditorInputAreaDiv = styled.div`
     flex-direction: column;
 
     .menubar {
-        height: 1em;
+        min-height: 2em;
+
+        display: flex;
+        align-items: center;
+
         background-color: hsla(0, 0%, 90%, 0.2);
+
+        
+
+        > b {
+            margin-right: auto;
+            font-weight: 700;
+        }
     }
 
     .inputarea-wrapper {
@@ -29,6 +42,80 @@ const EditorInputAreaDiv = styled.div`
         
         position: relative;
     }
+`
+
+type FileBarProps = {
+    isLoggedIn: boolean;
+}
+
+const FileBar = styled.div<FileBarProps>`
+    
+    margin-left: 1em;
+    margin-right: auto;
+    font-weight: 600;
+
+            
+    position: relative;
+
+    .file-menu {
+        
+        min-width: 5em;
+
+        top: 0;
+        left: 50%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        background-color: hsl(0, 0%, 30%);
+        border-radius: 2px;
+        
+        
+        opacity: 0;
+        visibility: hidden;
+        
+        z-index: 9999;
+        position: absolute;
+        
+        b {
+            width: 100%;
+            padding: 0.5em 2em;
+            
+            box-sizing: border-box;
+
+            white-space: pre;
+            font-size: 1.25em;
+            
+            background-color: hsl(0, 0%, 30%);
+            :hover {
+                background-color: hsl(0, 0%, 15%);
+            }
+        }
+
+        :hover, :focus-within {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        b.save-btn {
+            color: ${props => props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 60%)'};
+
+            :hover {
+                background-color: ${props => props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 30%)'};
+            }
+        }
+    }
+
+    :hover, :focus-within {
+        .file-menu {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+
+            
+        
 `
 
 type RenderedTextDivProps = {
@@ -252,7 +339,7 @@ const PaneSplitterDiv = styled.div`
 
 const EditorInputArea: React.FC = () => {
 
-
+    const { isLoggedIn } = useContext(AuthContext);
     const { editorState, editorFunctions } = useContext(EditorContext);
 
     const { editor } = editorState;
@@ -396,10 +483,26 @@ const EditorInputArea: React.FC = () => {
         /*  document.body.style.touchAction = ''; */
     }
 
+    const handleOnNewClick = () => {
+        editorFunctions.createNewEditorFile();
+    }
+
+    const handleDownloadClick = () => {
+        editorFunctions.downloadCurrentOpenFile();
+    }
+
     return (
         <EditorInputAreaDiv>
             <div className='menubar'>
-
+                <FileBar isLoggedIn={isLoggedIn}>
+                    File
+                    <div className='file-menu'>
+                        <b className='save-btn'>Save</b>
+                        <b onClick={handleOnNewClick}>New</b>
+                        <b onClick={handleDownloadClick}>Download File</b>
+                    </div>
+                </FileBar>
+                <b>{editorState.editor.currOpenFile.name}</b>
             </div>
 
             <div className='inputarea-wrapper'>
@@ -429,7 +532,7 @@ const EditorInputArea: React.FC = () => {
 
             </div>
 
-
+        <NotSavedDiag show={editor.notSavedDiagOpen} onHide={editorFunctions.closeNotSavedDiag} />
 
         </EditorInputAreaDiv>
     );
