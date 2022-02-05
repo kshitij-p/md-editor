@@ -28,25 +28,38 @@ const BasicModal = styled(Modal)`
   background-color: white;
   border-radius: 5px;
 
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0px 64px hsl(0, 0%, 0%, 1), inset 0px 0px 2px hsla(0, 0%, 90%, 0.3);
+  
   z-index: 1040;
   
   animation: fade-in ease-in-out;
   animation-duration: 0.25s;
+
+  overflow-y: scroll;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
 
   :focus, :active {
     border: none;
     outline: none;
   };
 
-  
+  ${props => props.custom ? props.custom : ''};
+
 `;
 
 const renderBackdrop = (props: RenderModalBackdropProps) => <Backdrop {...props} />;
 
-const BasicDialog: React.FC<BaseModalProps> = (props) => {
+type BasicDialogProps = BaseModalProps & {
+  custom?: string
+  onHide: Function;
+}
+
+const BasicDialog: React.FC<BasicDialogProps> = (props) => {
   return (
-    <BasicModal show={props.show} renderBackdrop={renderBackdrop} onHide={props.onHide}>
+    <BasicModal show={props.show} renderBackdrop={renderBackdrop} onHide={props.onHide} custom={props.custom} >
       {props.children}
     </BasicModal>
   )

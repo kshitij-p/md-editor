@@ -85,7 +85,8 @@ mdFileSchema.pre('save', async function(next){
     
     /* Check if directory for the user exists first */
     let files = await getUserFiles(this.author._id.toString());
-    
+  
+
     /* Make file if doesnt exist or update if it exists */
       
     /* Updates */
@@ -93,6 +94,7 @@ mdFileSchema.pre('save', async function(next){
         try {
 
             await fs.promises.rename(oldPath, filePath);
+            
         } catch (e){
             console.log('error while renaming', e);
         }

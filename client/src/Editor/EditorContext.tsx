@@ -2,6 +2,7 @@ import { marked } from "marked";
 import { createContext, RefObject, useEffect, useRef, useState } from "react";
 import customRenderer from "../utils/marked/customRenderer";
 import { sampleResponse } from "../utils/sampleResponse";
+import { MDFile } from "../utils/types";
 
 type EditorContextState = {
     editor: {
@@ -18,6 +19,9 @@ type EditorContextState = {
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
         renderedTextValue: string;
+    },
+    editorExplorer: {
+        files: MDFile[];
     }
 }
 
@@ -32,6 +36,12 @@ type EditorContextType = {
         parseEditorText: Function;
 
         setIsDraggingSplitter: Function;
+        setEditorFiles: Function;
+
+        fetchUserFiles: Function;
+        createFile: Function;
+        renameFile: Function;
+        deleteFile: Function;
     },
 
 }
@@ -59,9 +69,65 @@ const EditorContextProvider: React.FC = (props) => {
 
     const [isDraggingSplitter, setIsDraggingSplitter] = useState(false);
 
+    const [editorFiles, setEditorFiles] = useState([]);
+
     const parseEditorText = () => {
         let parsed = marked.parse(editorTextValue);
         setRenderedTextValue(parsed);
+    }
+
+    const fetchUserFiles = async () => {
+        let request = await fetch('/api/files');
+
+        if (request.status === 200 && !request.redirected) {
+            let response = await request.json();
+
+            setEditorFiles(response.files);
+        }
+    }
+
+    const createFile = async (fileName: string) => {
+
+        if (!fileName) {
+            return;
+        }
+
+        let requestBody = new URLSearchParams();
+        requestBody.append('name', fileName);
+
+        let request = await fetch('/api/files', { method: "POST", body: requestBody });
+
+        if (request.status === 200 && !request.redirected) {
+            fetchUserFiles();
+        }
+    }
+
+    const renameFile = async (fileName: string, fileID: string) => {
+        if (!fileName || !fileID) {
+            return;
+        }
+
+        let requestBody = new URLSearchParams();
+        requestBody.append('name', fileName);
+
+        let request = await fetch(`/api/files/${fileID}`, {method: "PUT", body: requestBody});
+
+        if(request.status === 200 && !request.redirected){
+            fetchUserFiles();
+        }
+    }
+
+    const deleteFile = async(fileID: string)=>{
+        if(!fileID){
+            return;
+        }
+
+        let request = await fetch(`/api/files/${fileID}`, {method: "DELETE"});
+
+        if(request.status === 200 && !request.redirected){
+            fetchUserFiles();
+        }
+
     }
 
     const state: EditorContextState = {
@@ -77,11 +143,18 @@ const EditorContextProvider: React.FC = (props) => {
         renderedView: {
             renderedViewDivRef,
             renderedTextValue,
+        },
+        editorExplorer: {
+            files: editorFiles
         }
 
     }
 
-    const editorFunctions = { setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue, parseEditorText, setIsDraggingSplitter };
+    const editorFunctions = {
+        setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue,
+        parseEditorText, setIsDraggingSplitter,
+        setEditorFiles, fetchUserFiles, createFile, renameFile, deleteFile
+    };
 
     useEffect(() => {
         let newText = sampleResponse;

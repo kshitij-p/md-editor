@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import { AuthContext } from "../Auth/AuthContext";
+import { MDFile } from "../utils/types";
 import CreateRenameDiag from "./Dialogs/CreateRenameDiag";
+import DeleteDiag from "./Dialogs/DeleteDiag";
+import { EditorContext } from "./EditorContext";
 
 const EditorFileExplorerDiv = styled.div`
     width: 30%;
@@ -157,23 +161,43 @@ const ExplorerFileDiv = styled.div`
 
 `
 
-const ExplorerFile = () => {
+type ExplorerFileProps = {
+    file: MDFile;
+    setCreateRenameDiagOpen: Function;
+    setIsRenaming: Function;
+    setEditingFile: Function;
+    openDeleteDiag: Function;
+}
+
+const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
+
+    const { name, lastModified, author, path, _id: id } = props.file;
 
     const controlButtonRef = useRef<HTMLDivElement>(null);
 
     const menuRef = useRef<HTMLDivElement>(null);
     const [menuOpen, setMenuOpen] = useState(false);
 
+    const getLastModifiedDate = () => {
+        let currDate = new Date(lastModified);
+        return `${currDate.getDate()}/${currDate.getMonth() + 1}/${currDate.getFullYear()}`
+    }
+
     const onControlClick = () => {
         setMenuOpen(true);
     }
 
     const handleRenameFile = () => {
-        console.log('renaming')
+        setMenuOpen(false);
+        props.setEditingFile(id);
+        props.setIsRenaming(true);
+        props.setCreateRenameDiagOpen(true);
     }
 
     const handleDeleteFile = () => {
-        console.log('deleting');
+        setMenuOpen(false);
+        props.setEditingFile(id);
+        props.openDeleteDiag(true);
     }
 
     useEffect(() => {
@@ -202,8 +226,8 @@ const ExplorerFile = () => {
             </div>
 
             <div className="text-container">
-                <b className="file-title">Exampledddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd</b>
-                <b className="file-last-md">Last Modified: 04/04/2022</b>
+                <b className="file-title">{name}</b>
+                <b className="file-last-md">{`Last Modified: ${getLastModifiedDate()}`}</b>
             </div>
 
             <div className="control-button" onClick={onControlClick} ref={controlButtonRef}>
@@ -309,22 +333,74 @@ const ExplorerControlsDiv = styled.div`
 
 const EditorFileExplorer: React.FC = (props) => {
 
+    const { isLoggedIn } = useContext(AuthContext);
+
+    const { editorFunctions, editorState } = useContext(EditorContext);
+    const { files } = editorState.editorExplorer;
+
     const [isRenaming, setIsRenaming] = useState(false);
 
     const [createRenameDiagOpen, setCreateRenameDiagOpen] = useState(false);
+    const [editingFile, setEditingFile] = useState('');
 
-    const closeCreateRenameDiag = ()=>{
+    const [deleteDiagOpen, setDeleteDiagOpen] = useState(false);
+
+    const closeCreateRenameDiag = () => {
         setCreateRenameDiagOpen(false);
+
+        if (editingFile) {
+
+            setEditingFile('');
+        }
+
+        if (isRenaming) {
+
+            setIsRenaming(false);
+        }
     }
 
-    const openCreateRenameDiag = ()=>{
+    const openCreateRenameDiag = () => {
         setCreateRenameDiagOpen(true);
+
     }
 
-    const handleAddOnClick = ()=>{
-        openCreateRenameDiag();
-        setIsRenaming(false);
+    const closeDeleteDiag = () => {
+        setDeleteDiagOpen(false);
+        setEditingFile('');
     }
+
+    const openDeleteDiag = () => {
+        setDeleteDiagOpen(true);
+    }
+
+    const handleAddOnClick = () => {
+        if (isLoggedIn) {
+
+            openCreateRenameDiag();
+
+            if (isRenaming) {
+
+                setIsRenaming(false);
+            }
+        }
+    }
+
+    useEffect(() => {
+
+        if (isLoggedIn) {
+
+            editorFunctions.fetchUserFiles();
+        }
+
+    }, [])
+
+    useEffect(() => {
+
+        if (isLoggedIn) {
+            editorFunctions.fetchUserFiles();
+        }
+
+    }, [isLoggedIn])
 
     return (
         <>
@@ -334,7 +410,7 @@ const EditorFileExplorer: React.FC = (props) => {
 
                     <div className="search-bar">
                         <img src="searchicon.svg" alt="" />
-                        <input type="text"  />
+                        <input type="text" />
                     </div>
 
                     <button className="add-btn" aria-label="Create new document button" onClick={handleAddOnClick}>
@@ -342,21 +418,16 @@ const EditorFileExplorer: React.FC = (props) => {
                     </button>
 
                 </ExplorerControlsDiv>
-                
+
                 <FileList>
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
-                    <ExplorerFile />
+                    {files.map((x, index) => <ExplorerFile key={index} file={x}
+                        setCreateRenameDiagOpen={setCreateRenameDiagOpen} setIsRenaming={setIsRenaming}
+                        setEditingFile={setEditingFile} openDeleteDiag={openDeleteDiag} />)}
                 </FileList>
 
-                <CreateRenameDiag renaming={isRenaming} editingID={null} show={createRenameDiagOpen} onHide={closeCreateRenameDiag} />
+                <CreateRenameDiag renaming={isRenaming} editingID={editingFile} show={createRenameDiagOpen} onHide={closeCreateRenameDiag} />
+
+                <DeleteDiag show={deleteDiagOpen} onHide={closeDeleteDiag} editingID={editingFile} setEditingID={setEditingFile} />
 
             </EditorFileExplorerDiv>
         </>

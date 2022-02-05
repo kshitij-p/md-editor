@@ -44,8 +44,6 @@ const App: React.FC = () => {
 
   }, [])
 
-  console.log({ isLoggedIn })
-
   return (
     <EditorContextProvider>
       <AppDiv>
