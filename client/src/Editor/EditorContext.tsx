@@ -21,6 +21,7 @@ type EditorContextState = {
         isUnsaved: boolean;
         notSavedDiagOpen: boolean;
 
+        autoSaveTimeout: ReturnType<typeof setTimeout> | undefined;
     },
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
@@ -50,6 +51,7 @@ type EditorContextType = {
         createFile: Function;
         renameFile: Function;
         deleteFile: Function;
+        overwriteFile: Function;
 
         setCurrOpenFile: Function;
         clearEditorForNewFile: Function;
@@ -62,6 +64,7 @@ type EditorContextType = {
         setNotSavedDiagOpen: Function;
         closeNotSavedDiag: Function & any;
         setCreateRenameDiagOpen: Function;
+
     },
 
 }
@@ -97,6 +100,8 @@ const EditorContextProvider: React.FC = (props) => {
     const [notSavedDiagOpen, setNotSavedDiagOpen] = useState(false);
 
     const [createRenameDiagOpen, setCreateRenameDiagOpen] = useState(false);
+
+    const [autoSaveTimeout, setAutoSaveTimeout] = useState(undefined);
 
     const parseEditorText = () => {
         let parsed = marked.parse(editorTextValue);
@@ -194,7 +199,10 @@ const EditorContextProvider: React.FC = (props) => {
         setIsUnsaved(false);
     }
 
+    /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
     const saveCurrentOpenFile = (autoTriggered = false) => {
+        /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
+        clearTimeout(autoSaveTimeout);
         if (currOpenFile.path && !isUnsaved) {
             /* Provide some visual feedback here */
             return;
@@ -256,6 +264,7 @@ const EditorContextProvider: React.FC = (props) => {
             currOpenFile,
             isUnsaved,
             notSavedDiagOpen,
+            autoSaveTimeout,
         },
         renderedView: {
             renderedViewDivRef,
@@ -278,6 +287,8 @@ const EditorContextProvider: React.FC = (props) => {
         setNotSavedDiagOpen,
         closeNotSavedDiag,
         setCreateRenameDiagOpen,
+        overwriteFile,
+        setAutoSaveTimeout
     };
 
     useEffect(() => {

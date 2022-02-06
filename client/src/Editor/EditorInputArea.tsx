@@ -448,6 +448,26 @@ const EditorInputArea: React.FC = () => {
     }, [editor.editorPaneRef, editor.editorHeight, renderedView.renderedViewDivRef])
 
 
+    useEffect(() => {
+
+        const saveBeforeUnload = (e: any) => {
+            if (editor.isUnsaved) {
+
+                let dialogText = 'Save changes before leaving or wait 1-2 seconds for autosave to save them';
+                e.returnValue = dialogText;
+                return dialogText;
+            }
+
+        }
+
+        window.addEventListener('beforeunload', saveBeforeUnload)
+
+        return function cleanup() {
+            window.removeEventListener('beforeunload', saveBeforeUnload);
+        }
+
+    }, [editor.isUnsaved])
+
     const onTouchStart = (event: any) => {
         event.preventDefault();
         /*  document.body.style.overflow = 'hidden'; */
@@ -494,6 +514,7 @@ const EditorInputArea: React.FC = () => {
     const handleSaveClick = () => {
         editorFunctions.saveCurrentOpenFile();
     }
+
 
     return (
         <EditorInputAreaDiv>

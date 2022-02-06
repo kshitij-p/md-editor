@@ -21,14 +21,14 @@ const EditorDiv = styled.div`
 
 const Editor = () => {
   return (
-      <>
-    <EditorDiv>
+    <>
+      <EditorDiv>
         <EditorFileExplorer />
 
         <EditorInputArea />
 
-    </EditorDiv>
-      </>
+      </EditorDiv>
+    </>
   );
 };
 

@@ -80,10 +80,23 @@ class CodeMirrorEditor extends React.PureComponent {
     }
 
     handleBeforeChange = (event: ChangeEvent, data: any, value: string) => {
+        clearTimeout(this.context.editorState.editor.autoSaveTimeout);
+
         this.context.editorFunctions.setEditorTextValue(value);
-        if(this.context.editorState.editor.isUnsaved !== true){
+
+        if (this.context.editorState.editor.isUnsaved !== true) {
             this.context.editorFunctions.setIsUnsaved(true);
         }
+        /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
+        let timeoutID = setTimeout(() => {
+
+            this.context.editorFunctions.saveCurrentOpenFile(true);
+
+
+        }, 3000)
+
+        this.context.editorFunctions.setAutoSaveTimeout(timeoutID);
+
     }
 
     handleOnBlur = (cmInstance: CodeMirror, event: InputEvent) => {
@@ -102,7 +115,7 @@ class CodeMirrorEditor extends React.PureComponent {
 
                 if (bracketKeys.includes(event.key)) {
                     event.preventDefault();
-                    
+
                     let selectedWord = cmInstance.getSelection();
 
                     cmInstance.replaceSelection(wrapSelectedWord(event.key, selectedWord, true));
@@ -131,8 +144,8 @@ class CodeMirrorEditor extends React.PureComponent {
         }
     }
 
-    handleOnDrop = (editor: CodeMirrorEditor, event: DragEvent)=>{
-        if(this.context.editorState.inEditorMode === false){
+    handleOnDrop = (editor: CodeMirrorEditor, event: DragEvent) => {
+        if (this.context.editorState.inEditorMode === false) {
 
             event.preventDefault();
         }
