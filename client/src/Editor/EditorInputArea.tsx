@@ -21,12 +21,13 @@ const EditorInputAreaDiv = styled.div`
 
         background-color: hsla(0, 0%, 90%, 0.2);
 
-        
+        position: relative;
 
         > b {
             margin-right: auto;
             font-weight: 700;
         }
+
     }
 
     .inputarea-wrapper {
@@ -41,6 +42,36 @@ const EditorInputAreaDiv = styled.div`
 
         
         position: relative;
+    }
+`
+
+type CurrFileNameProps = {
+    saved: boolean;
+}
+
+const CurrFileName = styled.b<CurrFileNameProps>`
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: -0.25em;
+
+    ::after {
+        content: '';
+
+        height: 0.75em;
+        width: 0.75em;
+
+        margin-left: 0.25em;
+        top: 50%;
+        margin-top: -0.4em;
+
+        background-color: white;
+        border-radius: 50%;
+        z-index: 999;
+        position: absolute;
+
+        display: ${props => props.saved ? 'inline-block' : 'none'};
+
     }
 `
 
@@ -113,9 +144,7 @@ const FileBar = styled.div<FileBarProps>`
             visibility: visible;
         }
     }
-
             
-        
 `
 
 type RenderedTextDivProps = {
@@ -527,7 +556,9 @@ const EditorInputArea: React.FC = () => {
                         <b onClick={handleDownloadClick}>Download File</b>
                     </div>
                 </FileBar>
-                <b>{editorState.editor.currOpenFile.name}</b>
+                <CurrFileName saved={editorState.editor.isUnsaved}>
+                    {editorState.editor.currOpenFile.name}
+                </CurrFileName>
             </div>
 
             <div className='inputarea-wrapper'>

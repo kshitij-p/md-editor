@@ -8,6 +8,7 @@ const filesRouter = express.Router();
 const path = require('path');
 
 const fs = require('fs');
+const matter = require('gray-matter');
 
 
 filesRouter.get('/api/files', isLogged, async (req, res) => {
@@ -84,11 +85,11 @@ filesRouter.get('/api/files/:id', isLogged, async (req, res) => {
 
     if (!req.user._id.equals(file.author)) {
         return res.status(400).json({
-            message: "You aren't authenticated to edit this file"
+            message: "You aren't authenticated to view this file"
         })
     }
 
-    return res.status(200).json(file);
+    return res.status(200).json({ message: "Successfully retrieved file", file: file });
 
 })
 
@@ -219,6 +220,40 @@ filesRouter.delete('/api/files/:id', isLogged, async (req, res) => {
         message: "Successfully deleted the requested file",
         deletedFile: id
     })
+
+})
+
+filesRouter.post('/api/files/:id/parse', isLogged, async(req, res) => {
+    let { id } = req.params;
+
+    if (!id) {
+        return res.status(400).json({
+            message: "Missing id in request url params",
+            exampleRequest: '/api/files/1123idhere'
+        })
+    }
+
+    let file = await MDFile.findById(id);
+
+    if (!file) {
+        return res.status(400).json({ message: "No such file exists" });
+    }
+
+    if (!req.user._id.equals(file.author)) {
+        return res.status(400).json({ message: "You are not authenticated to view this file" });
+    }
+
+    let parsedFile;
+
+    try {
+
+        parsedFile = matter.read(file.path);
+
+    } catch (e) {
+        return res.status(500).json({ message: "Couldnt parse the requested file", error: e });
+    }
+
+    return res.status(200).json({ message: "Successfully parsed the requested file", requestedFile: file, parsedFile: parsedFile })
 
 })
 

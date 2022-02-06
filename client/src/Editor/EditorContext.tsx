@@ -65,6 +65,8 @@ type EditorContextType = {
         closeNotSavedDiag: Function & any;
         setCreateRenameDiagOpen: Function;
 
+        openCloudFile: Function;
+
     },
 
 }
@@ -250,6 +252,32 @@ const EditorContextProvider: React.FC = (props) => {
 
     }
 
+    const openCloudFile = async (fileID: string) => {
+
+        if (!fileID) {
+            return;
+        }
+
+        if(fileID === currOpenFile._id){
+            return;
+        }
+
+        if (isUnsaved) {
+            setNotSavedDiagOpen(true);
+            return;
+        }
+
+        let request = await fetch(`/api/files/${fileID}/parse`, { method: "POST" });
+
+        let response = await request.json();
+
+        if (request.status === 200 && !request.redirected && response.requestedFile) {
+            setCurrOpenFile(response.requestedFile);
+            setEditorTextValue(response.parsedFile.content);
+        }
+
+    }
+
 
     const state: EditorContextState = {
         editor: {
@@ -288,14 +316,17 @@ const EditorContextProvider: React.FC = (props) => {
         closeNotSavedDiag,
         setCreateRenameDiagOpen,
         overwriteFile,
-        setAutoSaveTimeout
+        setAutoSaveTimeout,
+        openCloudFile,
     };
 
+    /* TEMP */
     useEffect(() => {
         let newText = sampleResponse;
 
         setEditorTextValue(newText);
     }, [])
+    /* TEMP */
 
     return (
         <EditorContext.Provider value={{ editorState: state, editorFunctions }}>

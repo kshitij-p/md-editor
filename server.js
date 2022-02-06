@@ -110,57 +110,22 @@ app.get('/api/me', isLogged, async (req, res) => {
 
 app.post('/api/parsefile', upload.single('file'), async (req, res) => {
 
-    
-
-    /* If uploading files, uploadingFile header must be added to the request */
-
-    let isUploading = req.headers['uploading-file'];
-    
-    if(!isUploading){
+    if (!req.file) {
         return res.status(400).json({
-            message: "Missing uploading-file header on request."
+            message: "File missing or invalid file type or file size too big",
+
         })
-    }
-
-    isUploading = isUploading.toLowerCase() === 'true';
-
-    console.log({ isUploading });
-
-    if (isUploading) {
-
-        if (!req.file) {
-            return res.status(400).json({
-                message: "File missing or invalid file type or file size too big",
-
-            })
-        }
-    } else {
-        if (!req.body.path) {
-            return res.status(400).json({
-                message: "File path missing",
-
-            })
-        }
     }
 
     let parsedFile;
 
     try {
 
-        if (isUploading) {
-
-            parsedFile = matter.read(req.file.path);
-
-        } else {
-            parsedFile = matter.read(req.body.path);
-        }
+        parsedFile = matter.read(req.file.path);
 
     } catch (e) {
 
-        if (isUploading) {
-
-            await fs.promises.rm(req.file.path, { force: true });
-        }
+        await fs.promises.rm(req.file.path, { force: true });
 
         return res.status(400).json({
             message: "Couldn't parse the given file, something went wrong",
@@ -168,13 +133,9 @@ app.post('/api/parsefile', upload.single('file'), async (req, res) => {
         })
     }
 
-    if (isUploading) {
-
-        await fs.promises.rm(req.file.path, { force: true });
-
-    }
-
-    return res.status(200).json(parsedFile);
+    await fs.promises.rm(req.file.path, { force: true });
+    
+    return res.status(200).json({ message: "Successfully parsed the requested file", parsedFile: parsedFile });
 
 })
 

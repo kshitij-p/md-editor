@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { AuthContext } from "../Auth/AuthContext";
 import { MDFile } from "../utils/types";
@@ -173,6 +173,8 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
 
     const { name, lastModified, author, path, _id: id } = props.file;
 
+    const { editorFunctions } = useContext(EditorContext);
+
     const controlButtonRef = useRef<HTMLDivElement>(null);
 
     const menuRef = useRef<HTMLDivElement>(null);
@@ -200,6 +202,19 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
         props.openDeleteDiag(true);
     }
 
+    const handleOpenOnDoubleClick = (e: React.MouseEvent & { target: any }) => {
+
+        /* Prevent menu and control button double click from opening */
+        if (menuRef.current && controlButtonRef.current) {
+            if (menuRef.current.contains(e.target) || controlButtonRef.current.contains(e.target)) {
+                e.preventDefault();
+                return;
+            }
+        }
+
+        editorFunctions.openCloudFile(id);
+    }
+
     useEffect(() => {
 
         const hideOnOutsideClick = (e: MouseEvent & { target: any }) => {
@@ -220,7 +235,7 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
     }, [menuOpen, menuRef, controlButtonRef])
 
     return (
-        <ExplorerFileDiv>
+        <ExplorerFileDiv onDoubleClick={handleOpenOnDoubleClick}>
             <div className="fileicon-container">
                 <img src="/fileicon.svg" alt="fileicon" />
             </div>
