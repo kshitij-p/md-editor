@@ -3,16 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import redirectTo from '../utils/redirectTo';
 
 const Logout = () => {
-  
+
     let navigate = useNavigate();
-    
-    useEffect(()=>{
 
-        const requestLogout = async()=>{
-            let request = await fetch('/api/logout', {method: "POST"});
+    useEffect(() => {
 
-            console.log(request);
-
+        const requestLogout = async () => {
+            let request = await fetch('/api/logout', { method: "POST" });
 
             navigate(redirectTo(request.url));
         }
@@ -21,10 +18,10 @@ const Logout = () => {
     }, [])
 
     return (
-      <>
-      Logging out
-      </>
-  );
+        <>
+            Logging out
+        </>
+    );
 };
 
 export default Logout;

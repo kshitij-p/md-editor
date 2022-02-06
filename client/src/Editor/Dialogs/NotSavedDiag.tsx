@@ -75,26 +75,27 @@ const NotSavedDiag: React.FC<NotSavedDiagProps> = (props) => {
     props.onHide();
   }
 
-  const handleDiscard = ()=>{
+  const handleDiscard = () => {
     editorFunctions.clearEditorForNewFile();
-    
+
     props.onHide();
   }
 
   const handleOnAccept = () => {
+    props.onHide();
     if (isLoggedIn) {
 
       editorFunctions.saveCurrentOpenFile();
     } else {
       editorFunctions.downloadCurrentOpenFile();
+      if (editorState.editor.isUnsaved) {
+
+        editorFunctions.setIsUnsaved(false);
+      }
     }
 
-    if (editorState.editor.isUnsaved) {
 
-      editorFunctions.setIsUnsaved(false);
-    }
 
-    props.onHide();
   }
 
   return (
@@ -109,9 +110,9 @@ const NotSavedDiag: React.FC<NotSavedDiagProps> = (props) => {
         <div>
           <button className='accept' onClick={handleOnAccept}
             aria-label={`${isLoggedIn ? 'Save' : 'Download'} file`}>{`${isLoggedIn ? 'Save' : 'Download'}`}</button>
-            <button onClick={handleDiscard}>
-              Discard File
-            </button>
+          <button onClick={handleDiscard}>
+            Discard File
+          </button>
 
           <button
             aria-label='Go back and close dialog' onClick={handleBack}>Back</button>

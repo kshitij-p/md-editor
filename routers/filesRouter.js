@@ -55,7 +55,7 @@ filesRouter.post('/api/files', isLogged, async (req, res) => {
                 message: "No duplicate file names allowed"
             })
         }
-                
+
         return res.status(500).json({ message: "Couldnt create file", error: e });
     }
 
@@ -124,8 +124,19 @@ filesRouter.put('/api/files/:id', isLogged, async (req, res) => {
         })
     }
 
-    fileToEdit.name = name;
-    await fileToEdit.save();
+    try {
+
+        fileToEdit.name = name;
+        await fileToEdit.save();
+    } catch (e) {
+        if (e.code == 11000) {
+            return res.status(400).json({
+                message: "No duplicate file names allowed"
+            })
+        }
+
+        return res.status(500).json({ message: "Couldnt create file", error: e });
+    }
 
     return res.status(200).json({
         message: "Successfully edited file",
@@ -136,14 +147,33 @@ filesRouter.put('/api/files/:id', isLogged, async (req, res) => {
 
 filesRouter.patch('/api/files/:id', isLogged, async (req, res) => {
 
+    let { id } = req.params;
     let { fileData } = req.body;
 
-    if (!fileData) {
-        return res.status(400).json({ message: "Missing fileData in request body" })
+    if (!id) {
+        return res.status(400).json({
+            message: "Missing id in request url params",
+            exampleRequest: '/api/files/1123idhere'
+        })
+    }
+
+    /* We check for undefined here as user may want to make his file empty which would trigger !fileData */
+    if (fileData === undefined) {
+        return res.status(400).json({ message: "Missing fileData in request body" });
+    }
+
+    let file = await MDFile.findById(id);
+
+    if (!file) {
+        return res.status(400).json({ message: "No such file exists" });
+    }
+
+    if (!req.user._id.equals(file.author)) {
+        return res.status(400).json({ message: "You aren't authenticated to do that" });
     }
 
     let saved = await new Promise((resolve, reject) => {
-        fs.writeFile('path', data, { flag: 'r+' }, (e) => {
+        fs.writeFile(file.path, fileData || '', { flag: 'w' }, (e) => {
             if (e) {
                 resolve(e);
             }
@@ -154,6 +184,10 @@ filesRouter.patch('/api/files/:id', isLogged, async (req, res) => {
     if (saved !== true) {
         return res.status(400).json({ message: "Coulnd't save", error: e })
     }
+
+    await file.save();
+
+    return res.status(200).json({ message: "Successfully saved file with the given contents " })
 })
 
 filesRouter.delete('/api/files/:id', isLogged, async (req, res) => {

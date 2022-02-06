@@ -491,13 +491,17 @@ const EditorInputArea: React.FC = () => {
         editorFunctions.downloadCurrentOpenFile();
     }
 
+    const handleSaveClick = () => {
+        editorFunctions.saveCurrentOpenFile();
+    }
+
     return (
         <EditorInputAreaDiv>
             <div className='menubar'>
                 <FileBar isLoggedIn={isLoggedIn}>
                     File
                     <div className='file-menu'>
-                        <b className='save-btn'>Save</b>
+                        <b className='save-btn' onClick={handleSaveClick}>Save</b>
                         <b onClick={handleOnNewClick}>New</b>
                         <b onClick={handleDownloadClick}>Download File</b>
                     </div>
@@ -532,7 +536,7 @@ const EditorInputArea: React.FC = () => {
 
             </div>
 
-        <NotSavedDiag show={editor.notSavedDiagOpen} onHide={editorFunctions.closeNotSavedDiag} />
+            <NotSavedDiag show={editor.notSavedDiagOpen} onHide={editorFunctions.closeNotSavedDiag} />
 
         </EditorInputAreaDiv>
     );

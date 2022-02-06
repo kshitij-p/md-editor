@@ -20,6 +20,7 @@ type EditorContextState = {
         currOpenFile: MDFile;
         isUnsaved: boolean;
         notSavedDiagOpen: boolean;
+
     },
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
@@ -27,6 +28,8 @@ type EditorContextState = {
     },
     editorExplorer: {
         files: MDFile[];
+        createRenameDiagOpen: boolean;
+
     }
 }
 
@@ -58,6 +61,7 @@ type EditorContextType = {
         setIsUnsaved: Function;
         setNotSavedDiagOpen: Function;
         closeNotSavedDiag: Function & any;
+        setCreateRenameDiagOpen: Function;
     },
 
 }
@@ -92,6 +96,7 @@ const EditorContextProvider: React.FC = (props) => {
     const [isUnsaved, setIsUnsaved] = useState(false);
     const [notSavedDiagOpen, setNotSavedDiagOpen] = useState(false);
 
+    const [createRenameDiagOpen, setCreateRenameDiagOpen] = useState(false);
 
     const parseEditorText = () => {
         let parsed = marked.parse(editorTextValue);
@@ -119,10 +124,16 @@ const EditorContextProvider: React.FC = (props) => {
         requestBody.append('fileData', editorTextValue);
 
         let request = await fetch('/api/files', { method: "POST", body: requestBody });
+        let response = await request.json();
 
-        if (request.status === 200 && !request.redirected) {
+        if (request.status === 200 && !request.redirected && response.createdFile) {
+
             fetchUserFiles();
+            setCurrOpenFile(response.createdFile);
+            setIsUnsaved(false);
+
         }
+
     }
 
     const renameFile = async (fileName: string, fileID: string) => {
@@ -134,9 +145,12 @@ const EditorContextProvider: React.FC = (props) => {
         requestBody.append('name', fileName);
 
         let request = await fetch(`/api/files/${fileID}`, { method: "PUT", body: requestBody });
-
-        if (request.status === 200 && !request.redirected) {
+        let response = await request.json();
+        if (request.status === 200 && !request.redirected && response.editedFile) {
             fetchUserFiles();
+            if (response.editedFile._id === currOpenFile._id) {
+                setCurrOpenFile(response.editedFile);
+            }
         }
     }
 
@@ -153,28 +167,60 @@ const EditorContextProvider: React.FC = (props) => {
 
     }
 
-    const closeNotSavedDiag = ()=>{
+    const overwriteFile = async (fileID: string) => {
+        if (!fileID) {
+            return;
+        }
+
+        let requestData = new URLSearchParams();
+        requestData.append('fileData', editorTextValue);
+
+        let request = await fetch(`/api/files/${fileID}`, { method: "PATCH", body: requestData })
+        let response = await request.json();
+
+        if (request.status === 200 && !request.redirected) {
+            fetchUserFiles();
+        }
+
+    }
+
+    const closeNotSavedDiag = () => {
         setNotSavedDiagOpen(false);
     }
-    
+
     const clearEditorForNewFile = () => {
         setCurrOpenFile(defaultMDFile);
         setEditorTextValue('');
         setIsUnsaved(false);
     }
 
-    const saveCurrentOpenFile = () => {
-        if (isLoggedIn) {
-            console.log('is saving');
-        } else {
-            /* Download file */
+    const saveCurrentOpenFile = (autoTriggered = false) => {
+        if (currOpenFile.path && !isUnsaved) {
+            /* Provide some visual feedback here */
+            return;
         }
 
-        setIsUnsaved(false);
+        if (isLoggedIn) {
+
+            if (!currOpenFile.path) {
+
+                /* We dont set unsaved to false in here because we only want it to set if the user 
+                creates file, if he just escapes the dialog we dont want it to get triggered */
+                if (!autoTriggered) {
+
+                    setCreateRenameDiagOpen(true);
+                }
+            } else {
+                overwriteFile(currOpenFile._id);
+                setIsUnsaved(false);
+            }
+
+        }
+
     }
 
     const createNewEditorFile = () => {
-        if(isUnsaved){
+        if (isUnsaved) {
             setNotSavedDiagOpen(true);
             return;
         }
@@ -216,7 +262,8 @@ const EditorContextProvider: React.FC = (props) => {
             renderedTextValue,
         },
         editorExplorer: {
-            files: editorFiles
+            files: editorFiles,
+            createRenameDiagOpen,
         }
 
     }
@@ -229,7 +276,8 @@ const EditorContextProvider: React.FC = (props) => {
         clearEditorForNewFile, createNewEditorFile, saveCurrentOpenFile, downloadCurrentOpenFile,
         setIsUnsaved,
         setNotSavedDiagOpen,
-        closeNotSavedDiag
+        closeNotSavedDiag,
+        setCreateRenameDiagOpen,
     };
 
     useEffect(() => {

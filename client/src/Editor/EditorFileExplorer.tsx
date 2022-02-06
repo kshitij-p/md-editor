@@ -338,9 +338,12 @@ const EditorFileExplorer: React.FC = (props) => {
     const { editorFunctions, editorState } = useContext(EditorContext);
     const { files } = editorState.editorExplorer;
 
+    const { createRenameDiagOpen } = editorState.editorExplorer;
+    const { setCreateRenameDiagOpen } = editorFunctions;
+
     const [isRenaming, setIsRenaming] = useState(false);
 
-    const [createRenameDiagOpen, setCreateRenameDiagOpen] = useState(false);
+
     const [editingFile, setEditingFile] = useState('');
 
     const [deleteDiagOpen, setDeleteDiagOpen] = useState(false);
@@ -392,6 +395,7 @@ const EditorFileExplorer: React.FC = (props) => {
             editorFunctions.fetchUserFiles();
         }
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -400,6 +404,7 @@ const EditorFileExplorer: React.FC = (props) => {
             editorFunctions.fetchUserFiles();
         }
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoggedIn])
 
     return (
