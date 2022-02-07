@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import { createContext, RefObject, useContext, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, ChangeEventHandler, createContext, MouseEventHandler, RefObject, useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../Auth/AuthContext";
 import defaultMDFile from "../utils/defaultMDFile";
 import customRenderer from "../utils/marked/customRenderer";
@@ -22,6 +22,10 @@ type EditorContextState = {
         notSavedDiagOpen: boolean;
 
         autoSaveTimeout: ReturnType<typeof setTimeout> | undefined;
+        openFileInputRef: RefObject<HTMLInputElement>;
+
+        currMenubarOption: number;
+
     },
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
@@ -66,6 +70,11 @@ type EditorContextType = {
         setCreateRenameDiagOpen: Function;
 
         openCloudFile: Function;
+        openLocalFile: ChangeEventHandler;
+
+        setCurrMenubarOption: Function;
+        closeMenubar: Function;
+        openMenubarFileMenu: MouseEventHandler<HTMLButtonElement>;
 
     },
 
@@ -104,6 +113,10 @@ const EditorContextProvider: React.FC = (props) => {
     const [createRenameDiagOpen, setCreateRenameDiagOpen] = useState(false);
 
     const [autoSaveTimeout, setAutoSaveTimeout] = useState(undefined);
+
+    const openFileInputRef = useRef<HTMLInputElement>(null);
+
+    const [currMenubarOption, setCurrMenubarOption] = useState(-1);
 
     const parseEditorText = () => {
         let parsed = marked.parse(editorTextValue);
@@ -183,7 +196,7 @@ const EditorContextProvider: React.FC = (props) => {
         requestData.append('fileData', editorTextValue);
 
         let request = await fetch(`/api/files/${fileID}`, { method: "PATCH", body: requestData })
-        let response = await request.json();
+
 
         if (request.status === 200 && !request.redirected) {
             fetchUserFiles();
@@ -199,6 +212,14 @@ const EditorContextProvider: React.FC = (props) => {
         setCurrOpenFile(defaultMDFile);
         setEditorTextValue('');
         setIsUnsaved(false);
+    }
+
+    const closeMenubar = () => {
+        setCurrMenubarOption(-1);
+    }
+
+    const openMenubarFileMenu = () => {
+        setCurrMenubarOption(0);
     }
 
     /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
@@ -230,12 +251,16 @@ const EditorContextProvider: React.FC = (props) => {
     }
 
     const createNewEditorFile = () => {
+
+        /* If not saved we always want to show not saved dialog  */
         if (isUnsaved) {
             setNotSavedDiagOpen(true);
             return;
         }
+
         saveCurrentOpenFile();
         clearEditorForNewFile();
+
     }
 
     const downloadCurrentOpenFile = () => {
@@ -258,7 +283,7 @@ const EditorContextProvider: React.FC = (props) => {
             return;
         }
 
-        if(fileID === currOpenFile._id){
+        if (fileID === currOpenFile._id) {
             return;
         }
 
@@ -273,6 +298,32 @@ const EditorContextProvider: React.FC = (props) => {
 
         if (request.status === 200 && !request.redirected && response.requestedFile) {
             setCurrOpenFile(response.requestedFile);
+            setEditorTextValue(response.parsedFile.content);
+        }
+
+    }
+
+    const openLocalFile = async (e: ChangeEvent<HTMLInputElement>) => {
+
+        /* Since this event triggers when file input is emptied we check for this */
+        let fileInput = openFileInputRef.current;
+        if (!fileInput || !fileInput.value || !fileInput.files?.length) {
+            return;
+        }
+
+        let requestData = new FormData();
+        requestData.append('file', fileInput.files[0]);
+
+
+        let request = await fetch('/api/parsefile', { method: "POST", body: requestData });
+        let response = await request.json();
+
+
+        fileInput.value = '';
+
+        if (request.status === 200 && response.parsedFile) {
+
+            clearEditorForNewFile();
             setEditorTextValue(response.parsedFile.content);
         }
 
@@ -293,6 +344,8 @@ const EditorContextProvider: React.FC = (props) => {
             isUnsaved,
             notSavedDiagOpen,
             autoSaveTimeout,
+            openFileInputRef,
+            currMenubarOption,
         },
         renderedView: {
             renderedViewDivRef,
@@ -318,6 +371,10 @@ const EditorContextProvider: React.FC = (props) => {
         overwriteFile,
         setAutoSaveTimeout,
         openCloudFile,
+        openLocalFile,
+        setCurrMenubarOption,
+        closeMenubar,
+        openMenubarFileMenu,
     };
 
     /* TEMP */

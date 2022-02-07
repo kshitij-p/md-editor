@@ -88,6 +88,20 @@ const FileBar = styled.div<FileBarProps>`
             
     position: relative;
 
+    button.MenubarOpener {
+        border: none;
+        outline: none;
+
+        background-color: transparent;
+
+        font-size: 1.25em;
+        color: white;
+        letter-spacing: 0.05em;
+            :hover {
+                background-color: hsl(0, 0%, 45%);
+            }
+    }
+
     .file-menu {
         
         min-width: 5em;
@@ -103,8 +117,8 @@ const FileBar = styled.div<FileBarProps>`
         border-radius: 2px;
         
         
-        opacity: 0;
-        visibility: hidden;
+        opacity: 1;
+        visibility: visible;
         
         z-index: 9999;
         position: absolute;
@@ -124,11 +138,7 @@ const FileBar = styled.div<FileBarProps>`
             }
         }
 
-        :hover, :focus-within {
-            opacity: 1;
-            visibility: visible;
-        }
-
+        
         b.save-btn {
             color: ${props => props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 60%)'};
 
@@ -137,14 +147,7 @@ const FileBar = styled.div<FileBarProps>`
             }
         }
     }
-
-    :hover, :focus-within {
-        .file-menu {
-            opacity: 1;
-            visibility: visible;
-        }
-    }
-            
+                
 `
 
 type RenderedTextDivProps = {
@@ -375,6 +378,7 @@ const EditorInputArea: React.FC = () => {
 
     const { renderedView } = editorState;
 
+
     const openEditorOnClick = () => {
         editorFunctions.setInEditorMode(true);
 
@@ -430,6 +434,68 @@ const EditorInputArea: React.FC = () => {
         editorFunctions.setIsDraggingSplitter(false);
     }
 
+    const onTouchStart = (event: any) => {
+        event.preventDefault();
+        /*  document.body.style.overflow = 'hidden'; */
+        /*   document.body.style.touchAction = 'none'; */
+    }
+
+    const onTouchMove = (event: any) => {
+        event.preventDefault();
+        if (!event.targetTouches.length) {
+            return;
+        }
+
+
+        let newY = event.targetTouches[0].clientY;
+
+        let totalEditorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
+
+        if (totalEditorHeight) {
+
+            let newHeight = Math.round((newY * 100) / totalEditorHeight);
+
+            if (Math.abs(newHeight - editor.editorHeight) >= 2) {
+
+                editorFunctions.setEditorHeight(newHeight);
+
+            }
+        }
+
+    }
+
+    const onTouchEnd = () => {
+        /*  document.body.style.overflow = ''; */
+        /*  document.body.style.touchAction = ''; */
+    }
+
+    const handleOnNewClick = () => {
+        editorFunctions.createNewEditorFile();
+    }
+
+    const handleDownloadClick = () => {
+        editorFunctions.downloadCurrentOpenFile();
+    }
+
+    const handleSaveClick = () => {
+        editorFunctions.saveCurrentOpenFile();
+    }
+
+    const handleOpenClick = () => {
+        if (!editor.openFileInputRef.current) {
+            return;
+        }
+
+        if (editor.isUnsaved) {
+            editorFunctions.setNotSavedDiagOpen(true);
+            return;
+        }
+
+        editor.openFileInputRef.current.click();
+
+
+    }
+
     /* Focus and blur editor whenever inEditorMode changes */
     useEffect(() => {
 
@@ -448,6 +514,7 @@ const EditorInputArea: React.FC = () => {
     /* Parse text i.e. parsed using marked and then setRenderedText to it whenever editorTextValue changes */
     useEffect(() => {
         editorFunctions.parseEditorText();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editor.editorTextValue])
 
     /* Append new content to renderedVIew whenever renderedText updates */
@@ -497,60 +564,34 @@ const EditorInputArea: React.FC = () => {
 
     }, [editor.isUnsaved])
 
-    const onTouchStart = (event: any) => {
-        event.preventDefault();
-        /*  document.body.style.overflow = 'hidden'; */
-        /*   document.body.style.touchAction = 'none'; */
-    }
+    useEffect(() => {
 
-    const onTouchMove = (event: any) => {
-        event.preventDefault();
-        if (!event.targetTouches.length) {
-            return;
-        }
-
-
-        let newY = event.targetTouches[0].clientY;
-
-        let totalEditorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
-
-        if (totalEditorHeight) {
-
-            let newHeight = Math.round((newY * 100) / totalEditorHeight);
-
-            if (Math.abs(newHeight - editor.editorHeight) >= 2) {
-
-                editorFunctions.setEditorHeight(newHeight);
-
+        const closeOnOutsideClick = (e: any) => {
+            if (!e.target.classList.contains('MenubarOpener')) {
+                editorFunctions.closeMenubar();
             }
         }
 
-    }
+        if (editor.currMenubarOption >= 0) {
+            document.addEventListener('click', closeOnOutsideClick);
+        }
 
-    const onTouchEnd = () => {
-        /*  document.body.style.overflow = ''; */
-        /*  document.body.style.touchAction = ''; */
-    }
+        return function cleaup() {
+            document.removeEventListener('click', closeOnOutsideClick);
+        }
 
-    const handleOnNewClick = () => {
-        editorFunctions.createNewEditorFile();
-    }
-
-    const handleDownloadClick = () => {
-        editorFunctions.downloadCurrentOpenFile();
-    }
-
-    const handleSaveClick = () => {
-        editorFunctions.saveCurrentOpenFile();
-    }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editor.currMenubarOption])
 
 
     return (
         <EditorInputAreaDiv>
             <div className='menubar'>
                 <FileBar isLoggedIn={isLoggedIn}>
-                    File
-                    <div className='file-menu'>
+                    <button onClick={editorFunctions.openMenubarFileMenu} className="MenubarOpener">File</button>
+                    <div className='file-menu'
+                        style={{ opacity: `${editor.currMenubarOption === 0 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 0 ? 'visible' : 'hidden'}` }}>
+                        <b onClick={handleOpenClick}>Open Local File</b>
                         <b className='save-btn' onClick={handleSaveClick}>Save</b>
                         <b onClick={handleOnNewClick}>New</b>
                         <b onClick={handleDownloadClick}>Download File</b>
@@ -589,6 +630,8 @@ const EditorInputArea: React.FC = () => {
             </div>
 
             <NotSavedDiag show={editor.notSavedDiagOpen} onHide={editorFunctions.closeNotSavedDiag} />
+
+            <input type="file" multiple={false} accept=".md, .txt" className='EditorFileInput' style={{ display: 'none' }} onChange={editorFunctions.openLocalFile} ref={editor.openFileInputRef} />
 
         </EditorInputAreaDiv>
     );

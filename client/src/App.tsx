@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import Editor from './Editor/Editor';
 import { EditorContextProvider } from './Editor/EditorContext';
 import { Route, Routes } from 'react-router-dom';
-import FileTest from './fileTest';
 import Login from './Auth/Login';
 import Register from './Auth/Register';
 import Logout from './Auth/Logout';
@@ -42,6 +41,7 @@ const App: React.FC = () => {
 
     updateLoggedIn();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -50,7 +50,6 @@ const App: React.FC = () => {
 
         <Routes>
           <Route path="/" element={<Editor />} />
-          <Route path="/test" element={<FileTest />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/logout" element={<Logout />} />
