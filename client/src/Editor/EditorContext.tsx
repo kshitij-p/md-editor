@@ -42,7 +42,9 @@ type EditorContextState = {
     editorExplorer: {
         files: MDFile[];
         createRenameDiagOpen: boolean;
-
+        editorSearchQuery: string;
+        editorSearchResults: MDFile[];
+        searchResultsLoading: boolean;
     }
 }
 
@@ -64,6 +66,10 @@ type EditorContextType = {
         renameFile: Function;
         deleteFile: Function;
         overwriteFile: Function;
+
+        setEditorSearchQuery: Function;
+        setEditorSearchResults: Function;
+        setSearchResultsLoading: Function;
 
         setCurrOpenFile: Function;
         clearEditorForNewFile: Function;
@@ -122,6 +128,10 @@ const EditorContextProvider: React.FC = (props) => {
     const [isDraggingSplitter, setIsDraggingSplitter] = useState(false);
 
     const [editorFiles, setEditorFiles] = useState([]);
+
+    const [editorSearchQuery, setEditorSearchQuery] = useState('');
+    const [editorSearchResults, setEditorSearchResults] = useState([]);
+    const [searchResultsLoading, setSearchResultsLoading] = useState(false);
 
     const [currOpenFile, setCurrOpenFile] = useState(defaultMDFile);
 
@@ -491,6 +501,9 @@ const EditorContextProvider: React.FC = (props) => {
         editorExplorer: {
             files: editorFiles,
             createRenameDiagOpen,
+            editorSearchQuery,
+            editorSearchResults,
+            searchResultsLoading,
         }
 
     }
@@ -506,6 +519,11 @@ const EditorContextProvider: React.FC = (props) => {
         closeNotSavedDiag,
         setCreateRenameDiagOpen,
         overwriteFile,
+
+        setEditorSearchQuery,
+        setEditorSearchResults,
+        setSearchResultsLoading,
+
         setAutoSaveTimeout,
         openCloudFile,
         openLocalFile,

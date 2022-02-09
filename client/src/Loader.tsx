@@ -3,9 +3,14 @@ import styled from 'styled-components';
 
 type LoaderProps = {
     loading: boolean;
+    custom?: string;
 }
 
-const LoaderDiv = styled.div`
+type LoaderDivProps = {
+    custom?: string;
+}
+
+const LoaderDiv = styled.div<LoaderDivProps>`
     width: 100%;
     height: 100%;
     
@@ -34,8 +39,10 @@ const LoaderDiv = styled.div`
             0% {transform: rotate(0deg)}
             100% {transform: rotate(360deg)}
         }
+        
     }
 
+    ${props => props.custom ? props.custom : ''};
 `
 
 const Loader: React.FC<LoaderProps> = (props) => {
@@ -44,7 +51,7 @@ const Loader: React.FC<LoaderProps> = (props) => {
         <>
             {props.loading ?
 
-                <LoaderDiv>
+                <LoaderDiv custom={props.custom}>
                     <div></div>
                 </LoaderDiv>
 

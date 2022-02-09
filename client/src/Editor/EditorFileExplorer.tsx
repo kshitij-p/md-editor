@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { AuthContext } from "../Auth/AuthContext";
+import Loader from "../Loader";
+import searchFiles from "../utils/searchFiles";
 import { MDFile } from "../utils/types";
 import CreateRenameDiag from "./Dialogs/CreateRenameDiag";
 import DeleteDiag from "./Dialogs/DeleteDiag";
@@ -171,7 +173,7 @@ type ExplorerFileProps = {
 
 const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
 
-    const { name, lastModified, author, path, _id: id } = props.file;
+    const { name, lastModified, _id: id } = props.file;
 
     const { editorFunctions } = useContext(EditorContext);
 
@@ -346,12 +348,14 @@ const ExplorerControlsDiv = styled.div`
     
 `
 
+let timeoutID: ReturnType<typeof setTimeout>;
+
 const EditorFileExplorer: React.FC = (props) => {
 
     const { isLoggedIn } = useContext(AuthContext);
 
     const { editorFunctions, editorState } = useContext(EditorContext);
-    const { files } = editorState.editorExplorer;
+    const { files, searchResultsLoading, editorSearchQuery, editorSearchResults } = editorState.editorExplorer;
 
     const { createRenameDiagOpen } = editorState.editorExplorer;
     const { setCreateRenameDiagOpen } = editorFunctions;
@@ -403,15 +407,31 @@ const EditorFileExplorer: React.FC = (props) => {
         }
     }
 
-    useEffect(() => {
+    const handleSearchOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        clearTimeout(timeoutID);
+        editorFunctions.setEditorSearchQuery(e.target.value);
 
-        if (isLoggedIn) {
+        if (e.target.value) {
+            editorFunctions.setSearchResultsLoading(true);
+            timeoutID = setTimeout(() => {
 
-            editorFunctions.fetchUserFiles();
+                editorFunctions.setEditorSearchResults(searchFiles(files, e.target.value));
+                editorFunctions.setSearchResultsLoading(false);
+            }, 500)
+        } else {
+            editorFunctions.setSearchResultsLoading(false);
+            editorFunctions.setEditorSearchResults([]);
         }
+    }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    const renderFiles = () => {
+
+        let filesToRender = editorSearchQuery ? editorSearchResults : files;
+
+        return filesToRender.map((x, index) => <ExplorerFile key={index} file={x}
+            setCreateRenameDiagOpen={setCreateRenameDiagOpen} setIsRenaming={setIsRenaming}
+            setEditingFile={setEditingFile} openDeleteDiag={openDeleteDiag} />)
+    }
 
     useEffect(() => {
 
@@ -430,7 +450,7 @@ const EditorFileExplorer: React.FC = (props) => {
 
                     <div className="search-bar">
                         <img src="searchicon.svg" alt="" />
-                        <input type="text" />
+                        <input type="text" value={editorSearchQuery} onChange={handleSearchOnChange} />
                     </div>
 
                     <button className="add-btn" aria-label="Create new document button" onClick={handleAddOnClick}>
@@ -439,10 +459,16 @@ const EditorFileExplorer: React.FC = (props) => {
 
                 </ExplorerControlsDiv>
 
+                <Loader loading={searchResultsLoading}
+                    custom={'left: 0;background-color: hsla(0, 0%, 0%, 0.2); backdrop-filter: blur(20px); border-radius: 10px;'} />
                 <FileList>
-                    {files.map((x, index) => <ExplorerFile key={index} file={x}
-                        setCreateRenameDiagOpen={setCreateRenameDiagOpen} setIsRenaming={setIsRenaming}
-                        setEditingFile={setEditingFile} openDeleteDiag={openDeleteDiag} />)}
+                    {renderFiles()}
+                    {editorSearchQuery && !editorSearchResults.length && !searchResultsLoading ?
+
+                        <b style={{ fontSize: '2em', marginTop: '1em' }}>No files with that name</b>
+                        :
+
+                        <></>}
                 </FileList>
 
                 <CreateRenameDiag renaming={isRenaming} editingID={editingFile} show={createRenameDiagOpen} onHide={closeCreateRenameDiag} />
