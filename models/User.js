@@ -12,8 +12,31 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     files: {
-        type: [{type: mongoose.Schema.Types.ObjectId, ref: 'MDFile'}]
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MDFile' }]
 
+    },
+    preferences: {
+        type: Object,
+        default: {
+            themes: {
+                customTheme: {
+                    name: 'Custom',
+                    colors: [
+
+                        { name: 'Editor Background', color: '#263238' },
+                        { name: 'Editor Text', color: '#EEFFFF' },
+                        { name: 'Gutter Background', color: '#263238' },
+                        { name: 'Gutter Text', color: '#546E7A' },
+
+                    ]
+                },
+
+                selectedTheme: 0
+            }
+
+
+
+        }
     }
 
 })

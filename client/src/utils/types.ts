@@ -5,3 +5,18 @@ export type MDFile = {
     lastModified: Date;
     author: string;
 }
+
+export type EditorPreferenceColor = {
+    name: string;
+    color: string;
+}
+
+export type EditorColorTheme = Object & {
+    name: string;
+    colors: EditorPreferenceColor[];
+}
+
+export type EditorPreferencesType = Object & {
+    themes: EditorColorTheme[];
+    selectedTheme: number;
+}

@@ -96,6 +96,31 @@ mongoose.connect('mongodb://localhost:27017/mdeditor').then(() => {
 app.use(userRouter);
 app.use(filesRouter);
 
+app.get('/api/preferences', isLogged, (req, res) => {
+    return res.status(200).json({ message: "Successfully retrieved user preferences", preferences: req.user.preferences })
+})
+
+app.put('/api/preferences', isLogged, async (req, res) => {
+    let { preferences } = req.body;
+
+    if (!preferences) {
+        return res.status(400).json({ message: "Missing preferences from request body" });
+    }
+
+    preferences = JSON.parse(preferences);
+
+    let user = await User.findById(req.user._id);
+
+    if (!user) {
+        return res.status(400).json({ message: "Couldnt find user. Please login." });
+    }
+
+    user.preferences = preferences;
+    await user.save();
+
+    return res.status(200).json({ message: "Successfully saved user preferences", newPreferences: preferences});
+})
+
 app.get('/api/isLogged', isLogged, async (req, res) => {
     return res.status(200).json({
         message: "You are logged in"
@@ -134,7 +159,7 @@ app.post('/api/parsefile', upload.single('file'), async (req, res) => {
     }
 
     await fs.promises.rm(req.file.path, { force: true });
-    
+
     return res.status(200).json({ message: "Successfully parsed the requested file", parsedFile: parsedFile });
 
 })

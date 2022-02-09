@@ -46,6 +46,18 @@ const BasicModal = styled(Modal)`
     outline: none;
   };
 
+  @media (max-width: 576px) {
+    width: 90vw;
+    height: 50vh;
+    margin-left: -45vw;
+  }
+
+  @media (max-width: 1200px) {
+    width: 90vw;
+    height: 50vh;
+    margin-left: -45vw;
+  }
+
   ${props => props.custom ? props.custom : ''};
 
 `;

@@ -4,6 +4,8 @@ import { EditorContext } from './EditorContext';
 import CodeMirrorEditor from './CodeMirrorEditor';
 import { AuthContext } from '../Auth/AuthContext';
 import NotSavedDiag from './Dialogs/NotSavedDiag';
+import PrefsDialog from './Dialogs/PrefsDialog';
+import { EditorColorTheme } from '../utils/types';
 
 
 const EditorInputAreaDiv = styled.div`
@@ -88,13 +90,13 @@ const FileBar = styled.div<FileBarProps>`
             
     position: relative;
 
-    button.MenubarOpener {
+    button.MenubarButton {
         border: none;
         outline: none;
 
         background-color: transparent;
 
-        font-size: 1.25em;
+        font-size: 1em;
         color: white;
         letter-spacing: 0.05em;
             :hover {
@@ -321,11 +323,24 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
 
 `
 
+type CodeMirrorEditorPaneProps = {
+    theme: EditorColorTheme
+}
 
-const CodeMirrorEditorPane = styled.div`
+const CodeMirrorEditorPane = styled.div<CodeMirrorEditorPaneProps>`
     /* Temp height */
     position: relative;
     transition: 0.1s;
+
+    .CodeMirror {
+        background-color: ${props => props.theme.colors[0].color ? props.theme.colors[0].color : 'auto'};
+        color: ${props => props.theme.colors[1].color ? props.theme.colors[1].color : 'auto'};
+    }
+
+    .CodeMirror-gutter {
+        background-color: ${props => props.theme.colors[2].color ? props.theme.colors[2].color : 'auto'};
+        color: ${props => props.theme.colors[3].color ? props.theme.colors[3].color : 'auto'};
+    }
 `
 
 
@@ -588,7 +603,9 @@ const EditorInputArea: React.FC = () => {
         <EditorInputAreaDiv>
             <div className='menubar'>
                 <FileBar isLoggedIn={isLoggedIn}>
-                    <button onClick={editorFunctions.openMenubarFileMenu} className="MenubarOpener">File</button>
+                    <button onClick={editorFunctions.openMenubarFileMenu} className="MenubarButton MenubarOpener">File</button>
+                    <button onClick={editorFunctions.openPrefsDiag} className="MenubarButton ">Preferences</button>
+
                     <div className='file-menu'
                         style={{ opacity: `${editor.currMenubarOption === 0 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 0 ? 'visible' : 'hidden'}` }}>
                         <b onClick={handleOpenClick}>Open Local File</b>
@@ -596,6 +613,8 @@ const EditorInputArea: React.FC = () => {
                         <b onClick={handleOnNewClick}>New</b>
                         <b onClick={handleDownloadClick}>Download File</b>
                     </div>
+
+
                 </FileBar>
                 <CurrFileName saved={editorState.editor.isUnsaved}>
                     {editorState.editor.currOpenFile.name}
@@ -605,7 +624,7 @@ const EditorInputArea: React.FC = () => {
             <div className='inputarea-wrapper'>
 
 
-                <CodeMirrorEditorPane ref={editor.editorPaneRef}
+                <CodeMirrorEditorPane ref={editor.editorPaneRef} theme={editor.preferences.themes[editor.preferences.selectedTheme]}
                     className='CodeMirrorEditorPane' style={{ height: `${editor.editorHeight}%`, cursor: `${editor.isDraggingSplitter ? 'grabbing' : 'auto'}` }}>
 
                     <CodeMirrorEditor />
@@ -630,6 +649,8 @@ const EditorInputArea: React.FC = () => {
             </div>
 
             <NotSavedDiag show={editor.notSavedDiagOpen} onHide={editorFunctions.closeNotSavedDiag} />
+
+            <PrefsDialog show={editor.prefsDiagOpen} onHide={editorFunctions.closePrefsDiag} />
 
             <input type="file" multiple={false} accept=".md, .txt" className='EditorFileInput' style={{ display: 'none' }} onChange={editorFunctions.openLocalFile} ref={editor.openFileInputRef} />
 

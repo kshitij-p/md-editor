@@ -2,9 +2,11 @@ import { marked } from "marked";
 import React, { ChangeEvent, ChangeEventHandler, createContext, MouseEventHandler, RefObject, useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../Auth/AuthContext";
 import defaultMDFile from "../utils/defaultMDFile";
+import { defaultCustomTheme, defaultThemes } from "../utils/defaultThemes";
 import customRenderer from "../utils/marked/customRenderer";
 import { sampleResponse } from "../utils/sampleResponse";
-import { MDFile } from "../utils/types";
+import { EditorColorTheme, EditorPreferencesType, MDFile } from "../utils/types";
+
 
 type EditorContextState = {
     editor: {
@@ -25,6 +27,10 @@ type EditorContextState = {
         openFileInputRef: RefObject<HTMLInputElement>;
 
         currMenubarOption: number;
+
+        prefsDiagOpen: boolean;
+        preferences: EditorPreferencesType
+        customTheme: EditorColorTheme;
 
     },
     renderedView: {
@@ -75,6 +81,14 @@ type EditorContextType = {
         setCurrMenubarOption: Function;
         closeMenubar: Function;
         openMenubarFileMenu: MouseEventHandler<HTMLButtonElement>;
+        setPrefsDiagOpen: Function;
+        closePrefsDiag: Function;
+        openPrefsDiag: Function & MouseEventHandler<HTMLButtonElement>;
+
+        setCustomTheme: Function;
+        setSelectedTheme: Function;
+
+        savePreferences: Function;
 
     },
 
@@ -117,6 +131,17 @@ const EditorContextProvider: React.FC = (props) => {
     const openFileInputRef = useRef<HTMLInputElement>(null);
 
     const [currMenubarOption, setCurrMenubarOption] = useState(-1);
+
+    const [prefsDiagOpen, setPrefsDiagOpen] = useState(false);
+
+    const [customTheme, setCustomTheme] = useState(defaultCustomTheme);
+
+    const [selectedTheme, setSelectedTheme] = useState(0);
+
+    const preferences = {
+        selectedTheme: selectedTheme,
+        themes: [...defaultThemes, customTheme]
+    }
 
     const parseEditorText = () => {
         let parsed = marked.parse(editorTextValue);
@@ -221,6 +246,7 @@ const EditorContextProvider: React.FC = (props) => {
     const openMenubarFileMenu = () => {
         setCurrMenubarOption(0);
     }
+
 
     /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
     const saveCurrentOpenFile = (autoTriggered = false) => {
@@ -329,6 +355,89 @@ const EditorContextProvider: React.FC = (props) => {
 
     }
 
+    const closePrefsDiag = () => {
+        setPrefsDiagOpen(false);
+
+    }
+
+    const openPrefsDiag = () => {
+        setPrefsDiagOpen(true);
+    }
+
+    const savePreferences = async (newPreferences: { newCustomTheme: EditorColorTheme, newSelectedTheme: number }) => {
+
+        let { newCustomTheme, newSelectedTheme } = newPreferences;
+
+        let themes = {
+            customTheme: newCustomTheme || customTheme,
+            selectedTheme: newSelectedTheme || selectedTheme,
+        }
+
+        if (isLoggedIn) {
+
+
+            let requestData = new URLSearchParams();
+            requestData.append('preferences', JSON.stringify(themes));
+
+            let request = await fetch('/api/preferences', { method: "PUT", body: requestData });
+
+            let response = await request.json();
+
+            if (request.status === 200 && !request.redirected) {
+                /* Snackbar feedback */
+            }
+        } else {
+            window.localStorage.setItem('preferences', JSON.stringify(themes));
+
+        }
+    }
+
+    /* TEMP */
+    useEffect(() => {
+        let newText = sampleResponse;
+
+        setEditorTextValue(newText);
+    }, [])
+    /* TEMP */
+
+    /* Get preferences */
+    useEffect(() => {
+
+        const fetchPrefs = async () => {
+
+            if (isLoggedIn) {
+
+
+                let request = await fetch('/api/preferences');
+
+                let response = await request.json();
+
+                let { preferences } = response;
+
+                if (request.status === 200 && !request.redirected && preferences.customTheme) {
+                    setCustomTheme(preferences.customTheme);
+                    setSelectedTheme(preferences.selectedTheme);
+                }
+
+            } else {
+                let storageVal = window.localStorage.getItem('preferences');
+
+                if(!storageVal){
+                    return;
+                }
+
+                let prefs = JSON.parse(storageVal);
+                if(prefs && prefs.customTheme && prefs.selectedTheme){
+                    setCustomTheme(prefs.customTheme);
+                    setSelectedTheme(prefs.selectedTheme);
+                }
+            }
+        }
+
+        fetchPrefs();
+
+
+    }, [isLoggedIn])
 
     const state: EditorContextState = {
         editor: {
@@ -346,6 +455,10 @@ const EditorContextProvider: React.FC = (props) => {
             autoSaveTimeout,
             openFileInputRef,
             currMenubarOption,
+
+            prefsDiagOpen,
+            customTheme,
+            preferences: preferences
         },
         renderedView: {
             renderedViewDivRef,
@@ -375,15 +488,14 @@ const EditorContextProvider: React.FC = (props) => {
         setCurrMenubarOption,
         closeMenubar,
         openMenubarFileMenu,
+        setPrefsDiagOpen,
+        closePrefsDiag,
+        openPrefsDiag,
+        setCustomTheme,
+        setSelectedTheme,
+        savePreferences,
     };
 
-    /* TEMP */
-    useEffect(() => {
-        let newText = sampleResponse;
-
-        setEditorTextValue(newText);
-    }, [])
-    /* TEMP */
 
     return (
         <EditorContext.Provider value={{ editorState: state, editorFunctions }}>
