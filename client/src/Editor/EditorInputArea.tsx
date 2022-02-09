@@ -631,7 +631,7 @@ const EditorInputArea: React.FC = () => {
                 </CodeMirrorEditorPane>
 
                 <PaneSplitterDiv tabIndex={3} draggable={true} className='PaneSplitterDiv'
-                    style={{ top: `${editor.editorHeight}%` }}>
+                    style={{ top: `${editor.editorHeight}%`, display: `${editor.isLoading ? 'none' : 'block'}` }}>
                     <div className='pane-splitter-thumb' onDrag={onSplitterDrag} onDragStart={onSplitterDragStart}
                         onDragEnd={onSplitterDragEnd}
                         draggable={true} onClick={onSplitterClick}

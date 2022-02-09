@@ -1,4 +1,7 @@
+import { useContext } from "react";
 import styled from "styled-components";
+import Loader from "../Loader";
+import { EditorContext } from "./EditorContext";
 import EditorFileExplorer from "./EditorFileExplorer";
 
 import EditorInputArea from "./EditorInputArea";
@@ -20,9 +23,15 @@ const EditorDiv = styled.div`
 
 
 const Editor = () => {
+
+  const { editorState } = useContext(EditorContext);
+
   return (
     <>
       <EditorDiv>
+
+        <Loader loading={editorState.editor.isLoading} />
+
         <EditorFileExplorer />
 
         <EditorInputArea />

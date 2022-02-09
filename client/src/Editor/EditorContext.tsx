@@ -26,6 +26,8 @@ type EditorContextState = {
         autoSaveTimeout: ReturnType<typeof setTimeout> | undefined;
         openFileInputRef: RefObject<HTMLInputElement>;
 
+        isLoading: boolean;
+
         currMenubarOption: number;
 
         prefsDiagOpen: boolean;
@@ -78,6 +80,8 @@ type EditorContextType = {
         openCloudFile: Function;
         openLocalFile: ChangeEventHandler;
 
+        setIsLoading: Function;
+
         setCurrMenubarOption: Function;
         closeMenubar: Function;
         openMenubarFileMenu: MouseEventHandler<HTMLButtonElement>;
@@ -129,6 +133,8 @@ const EditorContextProvider: React.FC = (props) => {
     const [autoSaveTimeout, setAutoSaveTimeout] = useState(undefined);
 
     const openFileInputRef = useRef<HTMLInputElement>(null);
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const [currMenubarOption, setCurrMenubarOption] = useState(-1);
 
@@ -318,15 +324,23 @@ const EditorContextProvider: React.FC = (props) => {
             return;
         }
 
-        let request = await fetch(`/api/files/${fileID}/parse`, { method: "POST" });
+        setIsLoading(true);
 
-        let response = await request.json();
+        try {
 
-        if (request.status === 200 && !request.redirected && response.requestedFile) {
-            setCurrOpenFile(response.requestedFile);
-            setEditorTextValue(response.parsedFile.content);
+            let request = await fetch(`/api/files/${fileID}/parse`, { method: "POST" });
+
+            let response = await request.json();
+
+            if (request.status === 200 && !request.redirected && response.requestedFile) {
+                setCurrOpenFile(response.requestedFile);
+                setEditorTextValue(response.parsedFile.content);
+            }
+        } catch (e) {
+            console.log('error while opening cloud file', e);
         }
 
+        setIsLoading(false);
     }
 
     const openLocalFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -340,18 +354,25 @@ const EditorContextProvider: React.FC = (props) => {
         let requestData = new FormData();
         requestData.append('file', fileInput.files[0]);
 
+        setIsLoading(true);
 
-        let request = await fetch('/api/parsefile', { method: "POST", body: requestData });
-        let response = await request.json();
+        try {
 
+            let request = await fetch('/api/parsefile', { method: "POST", body: requestData });
+            let response = await request.json();
 
-        fileInput.value = '';
+            fileInput.value = '';
 
-        if (request.status === 200 && response.parsedFile) {
+            if (request.status === 200 && response.parsedFile) {
 
-            clearEditorForNewFile();
-            setEditorTextValue(response.parsedFile.content);
+                clearEditorForNewFile();
+                setEditorTextValue(response.parsedFile.content);
+            }
+        } catch (e) {
+            console.log('error while opening local file', e);
         }
+
+        setIsLoading(false);
 
     }
 
@@ -422,12 +443,12 @@ const EditorContextProvider: React.FC = (props) => {
             } else {
                 let storageVal = window.localStorage.getItem('preferences');
 
-                if(!storageVal){
+                if (!storageVal) {
                     return;
                 }
 
                 let prefs = JSON.parse(storageVal);
-                if(prefs && prefs.customTheme && prefs.selectedTheme){
+                if (prefs && prefs.customTheme && prefs.selectedTheme) {
                     setCustomTheme(prefs.customTheme);
                     setSelectedTheme(prefs.selectedTheme);
                 }
@@ -454,6 +475,9 @@ const EditorContextProvider: React.FC = (props) => {
             notSavedDiagOpen,
             autoSaveTimeout,
             openFileInputRef,
+
+            isLoading,
+
             currMenubarOption,
 
             prefsDiagOpen,
@@ -485,6 +509,9 @@ const EditorContextProvider: React.FC = (props) => {
         setAutoSaveTimeout,
         openCloudFile,
         openLocalFile,
+
+        setIsLoading,
+
         setCurrMenubarOption,
         closeMenubar,
         openMenubarFileMenu,
