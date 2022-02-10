@@ -14,7 +14,7 @@ const EditorInputAreaDiv = styled.div`
 
     display: flex;
     flex-direction: column;
-
+    
     .menubar {
         min-height: 2em;
 
@@ -332,6 +332,12 @@ const CodeMirrorEditorPane = styled.div<CodeMirrorEditorPaneProps>`
     position: relative;
     transition: 0.1s;
 
+    position: relative;
+
+    .visible {
+        visibility: visible;
+    }
+
     .CodeMirror {
         background-color: ${props => props.theme.colors[0].color ? props.theme.colors[0].color : 'auto'};
         color: ${props => props.theme.colors[1].color ? props.theme.colors[1].color : 'auto'};
@@ -343,6 +349,50 @@ const CodeMirrorEditorPane = styled.div<CodeMirrorEditorPaneProps>`
     }
 `
 
+const EditorDropZone = styled.div`
+    
+    
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    
+    background-color: hsla(0, 0%, 0%, 0.5);
+    box-shadow: inset 0px 0px 100px 1px hsl(235, 50%, 10%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 10em;
+    font-weight: 200;
+    
+
+    backdrop-filter: blur(10px);
+    
+
+    z-index: 1;
+    visibility: hidden;
+        
+    :before {
+            
+        content: 'Drop here';
+        text-shadow: -2px 0px 2px red;
+
+        animation: shake 4s linear infinite;
+        animation-direction: alternate-reverse;
+        position: absolute;
+        
+    }
+
+    :after {
+            content: 'Drop here';
+            text-shadow:  2px 0px 2px cyan;
+
+            animation: shake 4s linear infintie;
+            animation-direction: alternate;
+        }
+
+`
 
 const PaneSplitterDiv = styled.div`
     border: none;
@@ -511,6 +561,61 @@ const EditorInputArea: React.FC = () => {
 
     }
 
+    const handleOpenFileInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        /* To avoid processing empty event */
+        if (!e.currentTarget.files?.length) {
+            return;
+        }
+
+        editorFunctions.openLocalFile(e.currentTarget.files);
+    }
+
+    /* Used to prevent default behavior and also set context value */
+    const handleEditorDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        editorFunctions.setIsDraggingToOpen(true);
+    }
+
+    const handleEditorDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    const handleEditorDragLeave = () => {
+        editorFunctions.setIsDraggingToOpen(false);
+    }
+
+    const handleEditorDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        /* Is called early to prevent it from blocking the screen in case of validation failures */
+        editorFunctions.setIsDraggingToOpen(false);
+
+        if (editor.isUnsaved) {
+            editorFunctions.setNotSavedDiagOpen(true);
+            return;
+        }
+
+        let files = e.dataTransfer.files;
+
+        /* Validate files */
+        if (files.length > 1) {
+            return;
+        }
+
+        let extension = files[0].name.split('.').pop();
+
+        if (extension === 'txt' || extension === 'md') {
+
+            editorFunctions.openLocalFile(files);
+        }
+
+
+
+    }
+
     /* Focus and blur editor whenever inEditorMode changes */
     useEffect(() => {
 
@@ -624,8 +729,16 @@ const EditorInputArea: React.FC = () => {
             <div className='inputarea-wrapper'>
 
 
-                <CodeMirrorEditorPane ref={editor.editorPaneRef} theme={editor.preferences.themes[editor.preferences.selectedTheme]}
+                <CodeMirrorEditorPane draggable={true}
+                    onDragEnter={handleEditorDragEnter}
+
+                    ref={editor.editorPaneRef} theme={editor.preferences.themes[editor.preferences.selectedTheme]}
                     className='CodeMirrorEditorPane' style={{ height: `${editor.editorHeight}%`, cursor: `${editor.isDraggingSplitter ? 'grabbing' : 'auto'}` }}>
+
+                    <EditorDropZone onDragOver={handleEditorDragOver} onDragLeave={handleEditorDragLeave} onDrop={handleEditorDrop}
+                        style={{ opacity: `${editor.isDraggingToOpen ? '1' : '0'}`, visibility: `${editor.isDraggingToOpen ? 'visible' : 'hidden'}` }}
+
+                    />
 
                     <CodeMirrorEditor />
                 </CodeMirrorEditorPane>
@@ -652,7 +765,7 @@ const EditorInputArea: React.FC = () => {
 
             <PrefsDialog show={editor.prefsDiagOpen} onHide={editorFunctions.closePrefsDiag} />
 
-            <input type="file" multiple={false} accept=".md, .txt" className='EditorFileInput' style={{ display: 'none' }} onChange={editorFunctions.openLocalFile} ref={editor.openFileInputRef} />
+            <input type="file" multiple={false} accept=".md, .txt" className='EditorFileInput' style={{ display: 'none' }} onChange={handleOpenFileInputOnChange} ref={editor.openFileInputRef} />
 
         </EditorInputAreaDiv>
     );

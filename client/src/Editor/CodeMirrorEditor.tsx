@@ -14,10 +14,10 @@ require('codemirror/theme/material.css');
 require('codemirror/mode/xml/xml');
 
 
-type EditorTextAreaProps = {
+type StyledEditorProps = {
     textEditorOpen: boolean;
 }
-const StyledEditor = styled(CodeMirror) <EditorTextAreaProps>`
+const StyledEditor = styled(CodeMirror) <StyledEditorProps>`
     
     /* For hide option */
     /* visibility: ${props => props.textEditorOpen ? 'visible' : 'hidden'};
@@ -35,32 +35,6 @@ const StyledEditor = styled(CodeMirror) <EditorTextAreaProps>`
         display: none;
     }
 
-    
-`
-
-
-const EditorTextArea = styled.textarea<EditorTextAreaProps>`
-    border: none;
-        outline: none;
-        height: 95%;
-        width: 100%;
-      
-
-        background-color: hsla(0, 0%, 10%, 0.1);
-
-        font-size: 2em;
-        color: white;
-        
-        visibility: ${props => props.textEditorOpen ? 'visible' : 'hidden'};
-        opacity: ${props => props.textEditorOpen ? '1' : '0'};
-
-        display: ${props => props.textEditorOpen ? 'inline-block' : 'none'};
-
-        :focus {
-            border: none;
-            outline: none;
-            box-shadow: none;
-        }
     
 `
 
@@ -144,12 +118,6 @@ class CodeMirrorEditor extends React.PureComponent {
         }
     }
 
-    handleOnDrop = (editor: CodeMirrorEditor, event: DragEvent) => {
-        if (this.context.editorState.inEditorMode === false) {
-
-            event.preventDefault();
-        }
-    }
 
     render() {
         return (
@@ -170,7 +138,9 @@ class CodeMirrorEditor extends React.PureComponent {
                             theme: 'material',
                             lineNumbers: true,
                             mode: 'gfm',
-                            lineWrapping: true
+                            lineWrapping: true,
+                            /* Drag and drop is disabled for custom drag and drop */
+                            dragDrop: false
 
                         }
                     }

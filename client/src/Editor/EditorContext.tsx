@@ -17,7 +17,9 @@ type EditorContextState = {
         editorRef: RefObject<any>;
 
         editorPaneRef: RefObject<HTMLDivElement>;
+
         isDraggingSplitter: boolean;
+        isDraggingToOpen: boolean;
 
         currOpenFile: MDFile;
         isUnsaved: boolean;
@@ -59,6 +61,8 @@ type EditorContextType = {
         parseEditorText: Function;
 
         setIsDraggingSplitter: Function;
+        setIsDraggingToOpen: Function;
+
         setEditorFiles: Function;
 
         fetchUserFiles: Function;
@@ -84,7 +88,7 @@ type EditorContextType = {
         setCreateRenameDiagOpen: Function;
 
         openCloudFile: Function;
-        openLocalFile: ChangeEventHandler;
+        openLocalFile: Function;
 
         setIsLoading: Function;
 
@@ -126,6 +130,7 @@ const EditorContextProvider: React.FC = (props) => {
     const [editorHeight, setEditorHeight] = useState(50);
 
     const [isDraggingSplitter, setIsDraggingSplitter] = useState(false);
+    const [isDraggingToOpen, setIsDraggingToOpen] = useState(false);
 
     const [editorFiles, setEditorFiles] = useState([]);
 
@@ -353,16 +358,17 @@ const EditorContextProvider: React.FC = (props) => {
         setIsLoading(false);
     }
 
-    const openLocalFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const openLocalFile = async (files: FileList) => {
 
         /* Since this event triggers when file input is emptied we check for this */
         let fileInput = openFileInputRef.current;
-        if (!fileInput || !fileInput.value || !fileInput.files?.length) {
+
+        if (!fileInput || !files.length) {
             return;
         }
 
         let requestData = new FormData();
-        requestData.append('file', fileInput.files[0]);
+        requestData.append('file', files[0]);
 
         setIsLoading(true);
 
@@ -371,6 +377,7 @@ const EditorContextProvider: React.FC = (props) => {
             let request = await fetch('/api/parsefile', { method: "POST", body: requestData });
             let response = await request.json();
 
+            /* To clean up in case this is being called from file input on change */
             fileInput.value = '';
 
             if (request.status === 200 && response.parsedFile) {
@@ -478,7 +485,9 @@ const EditorContextProvider: React.FC = (props) => {
 
             editorRef,
             editorPaneRef,
+
             isDraggingSplitter,
+            isDraggingToOpen,
 
             currOpenFile,
             isUnsaved,
@@ -510,7 +519,9 @@ const EditorContextProvider: React.FC = (props) => {
 
     const editorFunctions = {
         setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue,
-        parseEditorText, setIsDraggingSplitter,
+        parseEditorText,
+        setIsDraggingSplitter, setIsDraggingToOpen,
+
         setEditorFiles, fetchUserFiles, createFile, renameFile, deleteFile,
         setCurrOpenFile,
         clearEditorForNewFile, createNewEditorFile, saveCurrentOpenFile, downloadCurrentOpenFile,

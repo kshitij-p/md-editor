@@ -46,7 +46,7 @@ const generateCheckboxRenderer = (text: string, htmlTag: {
             }
         }
 
-        generatedHtml = `<div class="${additionalClasses} ">` + generatedHtml + '<p>\n</p></div>';
+        generatedHtml = `<div class="${additionalClasses} ">` + generatedHtml + '</div>';
 
         return generatedHtml;
 
