@@ -8,13 +8,18 @@ import PrefsDialog from './Dialogs/PrefsDialog';
 import { EditorColorTheme } from '../utils/types';
 
 
-const EditorInputAreaDiv = styled.div`
+const EditorInputAreaDiv = styled.div<{ explorerCollapsed: boolean }>`
     width: 100%;
     min-height: 100vh;
 
+    padding-left: ${props => props.explorerCollapsed ? '1.75em' : '25%'};
+
     display: flex;
     flex-direction: column;
+
+    transition: 0.25s ease-in-out;
     
+
     .menubar {
         min-height: 2em;
 
@@ -749,7 +754,7 @@ const EditorInputArea: React.FC = () => {
 
 
     return (
-        <EditorInputAreaDiv>
+        <EditorInputAreaDiv explorerCollapsed={editorState.editorExplorer.explorerCollapsed}>
             <div className='menubar'>
                 <FileBar isLoggedIn={isLoggedIn}>
                     <button onClick={handleFileMenuOnClick} className="MenubarButton MenubarOpener">File</button>

@@ -44,7 +44,10 @@ type EditorContextState = {
         renderedTextValue: string;
     },
     editorExplorer: {
+        explorerCollapsed: boolean;
+
         files: MDFile[];
+
         createRenameDiagOpen: boolean;
         editorSearchQuery: string;
         editorSearchResults: MDFile[];
@@ -65,6 +68,7 @@ type EditorContextType = {
         setIsDraggingSplitter: Function;
         setIsDraggingToOpen: Function;
 
+        setExplorerCollapsed: Function;
         setEditorFiles: Function;
 
         fetchUserFiles: Function;
@@ -138,6 +142,7 @@ const EditorContextProvider: React.FC = (props) => {
     const [isDraggingSplitter, setIsDraggingSplitter] = useState(false);
     const [isDraggingToOpen, setIsDraggingToOpen] = useState(false);
 
+    const [explorerCollapsed, setExplorerCollapsed] = useState(false);
     const [editorFiles, setEditorFiles] = useState([]);
 
     const [editorSearchQuery, setEditorSearchQuery] = useState('');
@@ -563,6 +568,7 @@ const EditorContextProvider: React.FC = (props) => {
             renderedTextValue,
         },
         editorExplorer: {
+            explorerCollapsed: explorerCollapsed,
             files: editorFiles,
             createRenameDiagOpen,
             editorSearchQuery,
@@ -576,6 +582,8 @@ const EditorContextProvider: React.FC = (props) => {
         setInEditorMode, setEditorTextValue, setEditorHeight, setRenderedTextValue,
         parseEditorText,
         setIsDraggingSplitter, setIsDraggingToOpen,
+
+        setExplorerCollapsed,
 
         setEditorFiles, fetchUserFiles, createFile, renameFile, deleteFile,
         setCurrOpenFile,

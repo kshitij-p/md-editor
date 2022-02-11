@@ -14,17 +14,54 @@ const EditorDiv = styled.div`
     display: flex;
 
     background-color: hsl(0, 0%, 0%);
+    color: hsl(0, 0%, 85%);
+    
     z-index: 1;
     position: relative;
 
-    color: hsl(0, 0%, 85%);
-`
+    > .collapse-btn {
+      border: none;
+      outline: none;
 
+      position: absolute;
+      width: 2em;
+      height: 100%;
+
+      top: 0%;
+      background-color: transparent;
+
+      img {
+        position: absolute;
+        width: 3em;
+
+        left: 25%;
+        margin-left: -50%;
+
+        opacity: 0.5;
+        transition: 0.15s ease-in-out;
+      }
+
+      
+
+      :hover, :focus {
+        img {
+          opacity: 1;
+        }
+      }
+
+    }
+`
 
 
 const Editor = () => {
 
-  const { editorState } = useContext(EditorContext);
+  const { editorState, editorFunctions } = useContext(EditorContext);
+
+  const { explorerCollapsed } = editorState.editorExplorer;
+
+  const openExplorer = () => {
+    editorFunctions.setExplorerCollapsed(false);
+  }
 
   return (
     <>
@@ -35,6 +72,14 @@ const Editor = () => {
         <EditorFileExplorer />
 
         <EditorInputArea />
+
+        <button className="collapse-btn" onClick={openExplorer}
+          style={{
+            transitionDelay: '0.25s',
+            visibility: `${explorerCollapsed ? 'visible' : 'hidden'}`, opacity: `${explorerCollapsed ? '1' : '0'}`
+          }}>
+          <img src="chevronright.svg" />
+        </button>
 
       </EditorDiv>
     </>

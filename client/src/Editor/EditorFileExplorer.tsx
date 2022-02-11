@@ -8,28 +8,24 @@ import CreateRenameDiag from "./Dialogs/CreateRenameDiag";
 import DeleteDiag from "./Dialogs/DeleteDiag";
 import { EditorContext } from "./EditorContext";
 
-const EditorFileExplorerDiv = styled.div`
-    width: 30%;
+const EditorFileExplorerDiv = styled.div<{ collapsed: boolean }>`
+    position: absolute;
+    width: 25%;
 
-    min-width: 20em;
+    left: ${props => props.collapsed ? '-100%' : '0%'};
+
+    /* min-width: 20em; */
 
     height: 100vh;
     
     padding: 4.5em 1em;
     background: radial-gradient(28.5% 21.44% at 40.53% 25.05%, rgba(62, 248, 204, 0.048) 0%, rgba(126, 246, 217, 0) 100%), radial-gradient(66.14% 66.14% at 92.9% 112.43%, rgba(255, 188, 57, 0.17) 0%, rgba(0, 0, 0, 0) 100%), radial-gradient(62.5% 36.37% at 40.34% 62.19%, rgba(249, 0, 62, 0.132) 0%, rgba(203, 11, 11, 0) 100%), radial-gradient(67.42% 36.2% at 88.54% 22.93%, rgba(0, 190, 238, 0.156) 0%, rgba(31, 89, 103, 0) 100%), linear-gradient(180deg, rgba(8, 8, 8, 0.3) 0%, rgba(26, 26, 26, 0.1) 100%);
    
-    overflow-y: scroll;
-    
-    ::-webkit-scrollbar {
-        display: none;
-    }
-
     z-index: 999;
 
     box-shadow: 0px 0px 24px hsla(0, 0%, 0%, 0.5);
 
-    position: relative;
-
+    transition: 0.25s ease-in-out;
     
 `
 
@@ -283,7 +279,13 @@ const FileList = styled.div`
     margin: 0 auto;
 
     width: 100%;
-    min-height: 100%;
+    height: 100%;
+
+    overflow-y: scroll;
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
 
     > * {
         margin-top: 1.75em;
@@ -292,7 +294,10 @@ const FileList = styled.div`
     > *:first-of-type {
         margin: 0;
     }
-   
+    
+    > *:last-of-type {
+        margin-bottom: 1.75em;
+    }
 `
 
 const ExplorerControlsDiv = styled.div`
@@ -353,8 +358,39 @@ const ExplorerControlsDiv = styled.div`
         :hover, :focus {
             opacity: 1;
         }
+
+        position: relative;
     }
-    
+
+    .collapse-btn {
+        outline: none;
+        border: none;
+
+        position: absolute;
+
+        margin-top: 1em;
+        margin-left: -4em;
+
+        left: 99%;
+        top: 0;
+        
+        background-color: transparent;
+
+        opacity: 0.65;
+        z-index: 1000;
+
+        
+        transition: 0.15s ease-in-out;
+        cursor: pointer;
+
+        :hover, :focus {
+
+            opacity: 1;
+
+        }
+    }
+        
+
 `
 
 let timeoutID: ReturnType<typeof setTimeout>;
@@ -433,6 +469,10 @@ const EditorFileExplorer: React.FC = (props) => {
         }
     }
 
+    const collapseExplorer = () => {
+        editorFunctions.setExplorerCollapsed(true);
+    }
+
     const renderFiles = () => {
 
         let filesToRender = editorSearchQuery ? editorSearchResults : files;
@@ -453,7 +493,8 @@ const EditorFileExplorer: React.FC = (props) => {
 
     return (
         <>
-            <EditorFileExplorerDiv>
+            <EditorFileExplorerDiv collapsed={editorState.editorExplorer.explorerCollapsed}>
+
 
                 <ExplorerControlsDiv>
 
@@ -462,8 +503,13 @@ const EditorFileExplorer: React.FC = (props) => {
                         <input type="text" value={editorSearchQuery} onChange={handleSearchOnChange} />
                     </div>
 
+
                     <button className="add-btn" aria-label="Create new document button" onClick={handleAddOnClick}>
                         <img src="plusicon.svg" alt="plus icon" />
+                    </button>
+
+                    <button className="collapse-btn" onClick={collapseExplorer}>
+                        <img src="chevronleft.svg" alt="left arrow icon" />
                     </button>
 
                 </ExplorerControlsDiv>
