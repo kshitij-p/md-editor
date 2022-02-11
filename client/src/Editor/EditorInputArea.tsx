@@ -108,8 +108,8 @@ const FileBar = styled.div<FileBarProps>`
         
         min-width: 5em;
 
-        top: 0;
-        left: 50%;
+        top: 1em;
+        left: 1em;
 
         display: flex;
         flex-direction: column;
@@ -204,7 +204,7 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
         background-color: hsl( 0,0%, 30%);
         border-radius: 10px;
         height: max-content;
-        padding: 0.25em;
+        padding: 0 0.25em;
         line-height: 170%;
     }
 
@@ -534,6 +534,15 @@ const EditorInputArea: React.FC = () => {
         /*  document.body.style.touchAction = ''; */
     }
 
+    const handleFileMenuOnClick = () => {
+        if (editor.currMenubarOption !== -1) {
+            editorFunctions.closeMenubar();
+            return;
+        }
+
+        editorFunctions.openMenubarFileMenu();
+    }
+
     const handleOnNewClick = () => {
         editorFunctions.createNewEditorFile();
     }
@@ -574,6 +583,12 @@ const EditorInputArea: React.FC = () => {
     const handleEditorDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
+
+        /* This event also runs when splitter is being dragged around */
+        if (editor.isDraggingSplitter) {
+            return;
+        }
+
         editorFunctions.setIsDraggingToOpen(true);
     }
 
@@ -589,6 +604,10 @@ const EditorInputArea: React.FC = () => {
     const handleEditorDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!e.dataTransfer.files.length) {
+            return;
+        }
 
         /* Is called early to prevent it from blocking the screen in case of validation failures */
         editorFunctions.setIsDraggingToOpen(false);
@@ -611,6 +630,30 @@ const EditorInputArea: React.FC = () => {
 
             editorFunctions.openLocalFile(files);
         }
+
+
+
+    }
+
+    const syncScroll = (e: React.MouseEvent<HTMLDivElement> | any) => {
+
+
+        if (!editor.editorRef.current || !renderedView.renderedViewDivRef.current || !editor.preferences.misc.syncScrollingOn) {
+            return;
+        }
+
+        let targetScrollPos: number;
+        let { doc: cmEditor } = editor.editorRef.current.editor;
+        let { current: renderedViewDom } = renderedView.renderedViewDivRef;
+
+        let maxEditorScrollHeight = e.height - e.clientHeight;
+
+
+
+
+        targetScrollPos = (cmEditor.scrollTop / maxEditorScrollHeight);
+        renderedViewDom.scrollTop = renderedView.renderedViewDivRef.current.scrollHeight * targetScrollPos;
+        return;
 
 
 
@@ -708,7 +751,7 @@ const EditorInputArea: React.FC = () => {
         <EditorInputAreaDiv>
             <div className='menubar'>
                 <FileBar isLoggedIn={isLoggedIn}>
-                    <button onClick={editorFunctions.openMenubarFileMenu} className="MenubarButton MenubarOpener">File</button>
+                    <button onClick={handleFileMenuOnClick} className="MenubarButton MenubarOpener">File</button>
                     <button onClick={editorFunctions.openPrefsDiag} className="MenubarButton ">Preferences</button>
 
                     <div className='file-menu'
@@ -740,7 +783,7 @@ const EditorInputArea: React.FC = () => {
 
                     />
 
-                    <CodeMirrorEditor />
+                    <CodeMirrorEditor syncScroll={syncScroll} />
                 </CodeMirrorEditorPane>
 
                 <PaneSplitterDiv tabIndex={3} draggable={true} className='PaneSplitterDiv'

@@ -19,4 +19,8 @@ export type EditorColorTheme = Object & {
 export type EditorPreferencesType = Object & {
     themes: EditorColorTheme[];
     selectedTheme: number;
+    misc: {
+
+        syncScrollingOn: boolean;
+    }
 }

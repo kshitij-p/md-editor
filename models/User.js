@@ -32,6 +32,9 @@ const userSchema = new mongoose.Schema({
                 },
 
                 selectedTheme: 0
+            },
+            misc: {
+                syncScrollingOn: true
             }
 
 

@@ -9,11 +9,13 @@ const PrefsColorMenuDiv = styled.div<{ selectingColor: boolean }>`
     width: 100%;
     height: 100%;
 
-    padding: 2em 0;
-    padding-left: 2em;
-
+    
     overflow-y: scroll;
     position: relative;
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
 
     .color-option {
         min-height: auto;
@@ -97,7 +99,9 @@ const ColorBox: React.FC<ColorBoxProps> = (props) => {
     }
 
     const handleOnColorChange: ColorChangeHandler = (newColor, e) => {
-        clearTimeout(timeoutID);
+
+        clearTimeout(editorState.editor.prefsSaveTimeout);
+
         let newColors = editorState.editor.customTheme.colors.map((x, index) => {
             if (index === props.boxIndex) {
                 return { ...x, color: newColor.hex };
@@ -110,10 +114,10 @@ const ColorBox: React.FC<ColorBoxProps> = (props) => {
 
 
         let newPrefs = { newCustomTheme: newTheme };
-        timeoutID = setTimeout(() => {
+        let timeoutID = setTimeout(() => {
             editorFunctions.savePreferences(newPrefs);
         }, 2000)
-
+        editorFunctions.setPrefsSaveTimeout(timeoutID);
 
     }
 
@@ -149,7 +153,6 @@ const ColorBox: React.FC<ColorBoxProps> = (props) => {
     )
 }
 
-let timeoutID: ReturnType<typeof setTimeout>
 
 const PrefsColorMenu = () => {
 
@@ -157,15 +160,19 @@ const PrefsColorMenu = () => {
     const { preferences } = editorState.editor;
 
     const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        clearTimeout(timeoutID);
+
+        clearTimeout(editorState.editor.prefsSaveTimeout);
 
         editorFunctions.setSelectedTheme(parseInt(e.target.value));
 
         let newPrefs = { newSelectedTheme: e.target.value };
 
-        timeoutID = setTimeout(() => {
+
+        let timeoutID = setTimeout(() => {
             editorFunctions.savePreferences(newPrefs);
         }, 2000)
+
+        editorFunctions.setPrefsSaveTimeout(timeoutID);
     }
 
     return (

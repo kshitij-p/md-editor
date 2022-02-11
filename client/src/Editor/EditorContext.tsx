@@ -33,6 +33,8 @@ type EditorContextState = {
         currMenubarOption: number;
 
         prefsDiagOpen: boolean;
+        prefsSaveTimeout: ReturnType<typeof setTimeout> & number | undefined;
+
         preferences: EditorPreferencesType
         customTheme: EditorColorTheme;
 
@@ -94,13 +96,17 @@ type EditorContextType = {
 
         setCurrMenubarOption: Function;
         closeMenubar: Function;
-        openMenubarFileMenu: MouseEventHandler<HTMLButtonElement>;
+        openMenubarFileMenu: Function;
         setPrefsDiagOpen: Function;
         closePrefsDiag: Function;
         openPrefsDiag: Function & MouseEventHandler<HTMLButtonElement>;
 
+        setPrefsSaveTimeout: Function;
+
         setCustomTheme: Function;
         setSelectedTheme: Function;
+
+        setSyncScrollingOn: Function
 
         savePreferences: Function;
 
@@ -155,13 +161,20 @@ const EditorContextProvider: React.FC = (props) => {
 
     const [prefsDiagOpen, setPrefsDiagOpen] = useState(false);
 
-    const [customTheme, setCustomTheme] = useState(defaultCustomTheme);
+    const [prefsSaveTimeout, setPrefsSaveTimeout] = useState(undefined);
 
+    const [customTheme, setCustomTheme] = useState(defaultCustomTheme);
     const [selectedTheme, setSelectedTheme] = useState(0);
+
+    const [syncScrollingOn, setSyncScrollingOn] = useState(false);
 
     const preferences = {
         selectedTheme: selectedTheme,
-        themes: [...defaultThemes, customTheme]
+        themes: [...defaultThemes, customTheme],
+        misc: {
+
+            syncScrollingOn: syncScrollingOn,
+        }
     }
 
     const parseEditorText = () => {
@@ -305,8 +318,26 @@ const EditorContextProvider: React.FC = (props) => {
             return;
         }
 
-        saveCurrentOpenFile();
-        clearEditorForNewFile();
+        /* If file is a cloud file we save then open new file otherwise we dont (the save also opens set not saved diag) */
+        if (currOpenFile._id) {
+
+            saveCurrentOpenFile();
+            clearEditorForNewFile();
+            return
+        }
+
+        /* If not a cloud file and value is empty, we dont show the prompt  */
+        if (!editorTextValue) {
+            clearEditorForNewFile();
+            return;
+        }
+
+        /* Else we show not saved diag as someone might want to save the result */
+        setNotSavedDiagOpen(true);
+        return;
+
+
+
 
     }
 
@@ -402,20 +433,28 @@ const EditorContextProvider: React.FC = (props) => {
         setPrefsDiagOpen(true);
     }
 
-    const savePreferences = async (newPreferences: { newCustomTheme: EditorColorTheme, newSelectedTheme: number }) => {
+    const savePreferences = async (newPreferences: { newCustomTheme: EditorColorTheme, newSelectedTheme: number, newSyncScrolling: boolean }) => {
 
-        let { newCustomTheme, newSelectedTheme } = newPreferences;
+        clearTimeout(prefsSaveTimeout);
+        let { newCustomTheme, newSelectedTheme, newSyncScrolling } = newPreferences;
 
-        let themes = {
-            customTheme: newCustomTheme || customTheme,
-            selectedTheme: newSelectedTheme || selectedTheme,
+        let prefs = {
+            themes: {
+
+                customTheme: newCustomTheme !== undefined ? newCustomTheme : customTheme,
+                selectedTheme: newSelectedTheme !== undefined ? newSelectedTheme : selectedTheme,
+            },
+            misc: {
+                syncScrollingOn: newSyncScrolling !== undefined ? newSyncScrolling : syncScrollingOn
+            }
         }
+
 
         if (isLoggedIn) {
 
 
             let requestData = new URLSearchParams();
-            requestData.append('preferences', JSON.stringify(themes));
+            requestData.append('preferences', JSON.stringify(prefs));
 
             let request = await fetch('/api/preferences', { method: "PUT", body: requestData });
 
@@ -425,7 +464,7 @@ const EditorContextProvider: React.FC = (props) => {
                 /* Snackbar feedback */
             }
         } else {
-            window.localStorage.setItem('preferences', JSON.stringify(themes));
+            window.localStorage.setItem('preferences', JSON.stringify(prefs));
 
         }
     }
@@ -443,8 +482,8 @@ const EditorContextProvider: React.FC = (props) => {
 
         const fetchPrefs = async () => {
 
+            setIsLoading(true);
             if (isLoggedIn) {
-
 
                 let request = await fetch('/api/preferences');
 
@@ -452,9 +491,14 @@ const EditorContextProvider: React.FC = (props) => {
 
                 let { preferences } = response;
 
-                if (request.status === 200 && !request.redirected && preferences.customTheme) {
-                    setCustomTheme(preferences.customTheme);
-                    setSelectedTheme(preferences.selectedTheme);
+                if (request.status === 200 && !request.redirected && preferences) {
+
+                    let { customTheme, selectedTheme } = preferences.themes;
+                    let { syncScrollingOn } = preferences.misc;
+
+                    setCustomTheme(customTheme);
+                    setSelectedTheme(selectedTheme);
+                    setSyncScrollingOn(syncScrollingOn);
                 }
 
             } else {
@@ -465,11 +509,19 @@ const EditorContextProvider: React.FC = (props) => {
                 }
 
                 let prefs = JSON.parse(storageVal);
-                if (prefs && prefs.customTheme && prefs.selectedTheme) {
-                    setCustomTheme(prefs.customTheme);
-                    setSelectedTheme(prefs.selectedTheme);
+
+                if (!prefs) {
+                    return;
                 }
+
+                let { customTheme, selectedTheme } = prefs.themes;
+                let { syncScrollingOn } = prefs.misc;
+
+                setCustomTheme(customTheme);
+                setSelectedTheme(selectedTheme);
+                setSyncScrollingOn(syncScrollingOn);
             }
+            setIsLoading(false);
         }
 
         fetchPrefs();
@@ -501,7 +553,9 @@ const EditorContextProvider: React.FC = (props) => {
 
             prefsDiagOpen,
             customTheme,
-            preferences: preferences
+            preferences: preferences,
+            prefsSaveTimeout,
+
         },
         renderedView: {
             renderedViewDivRef,
@@ -544,12 +598,17 @@ const EditorContextProvider: React.FC = (props) => {
         setCurrMenubarOption,
         closeMenubar,
         openMenubarFileMenu,
+
         setPrefsDiagOpen,
+        setPrefsSaveTimeout,
+
+
         closePrefsDiag,
         openPrefsDiag,
         setCustomTheme,
         setSelectedTheme,
         savePreferences,
+        setSyncScrollingOn,
     };
 
 

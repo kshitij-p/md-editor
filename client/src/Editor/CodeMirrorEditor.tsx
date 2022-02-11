@@ -1,5 +1,5 @@
-import React, { ChangeEvent } from "react";
-import { Controlled as CodeMirror } from "react-codemirror2";
+import React, { ChangeEvent, PropsWithChildren } from "react";
+import { Controlled as CodeMirror, ICodeMirror, IControlledCodeMirror } from "react-codemirror2";
 
 
 import { EditorContext } from "./EditorContext";
@@ -39,10 +39,10 @@ const StyledEditor = styled(CodeMirror) <StyledEditorProps>`
 `
 
 type CodeMirrorEditorProps = {
-    instance: any;
+    syncScroll: React.MouseEventHandler<HTMLDivElement>;
 }
 
-class CodeMirrorEditor extends React.PureComponent {
+class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEventHandler<HTMLDivElement> }> {
 
     instance: any;
 
@@ -118,6 +118,12 @@ class CodeMirrorEditor extends React.PureComponent {
         }
     }
 
+    handleSyncScroll = (cmInstance: any, event: React.MouseEvent<HTMLDivElement>) => {
+
+        this.props.syncScroll(event);
+
+
+    }
 
     render() {
         return (
@@ -125,11 +131,12 @@ class CodeMirrorEditor extends React.PureComponent {
                 <StyledEditor
                     onBeforeChange={this.handleBeforeChange}
                     value={this.context.editorState.editor.editorTextValue}
+                    ref={this.context.editorState.editor.editorRef}
                     onBlur={this.handleOnBlur}
                     onFocus={this.handleOnFocus}
-                    ref={this.context.editorState.editor.editorRef}
                     onKeyUp={this.handleKeyUp}
                     onKeyDown={this.handleKeyDown}
+                    onScroll={this.handleSyncScroll}
                     textEditorOpen={this.context.editorState.editor.inEditorMode}
                     autoCursor={true}
                     options={

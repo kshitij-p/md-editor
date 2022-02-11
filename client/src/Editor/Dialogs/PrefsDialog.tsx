@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components'
 import BasicDialog from '../../BasicDialog'
 import PrefsColorMenu from './Preferences/PrefsColorMenu';
+import PrefsMiscMenu from './Preferences/PrefsMiscMenu';
 
 type PrefsDialogProps = {
     show: boolean;
@@ -78,7 +79,7 @@ const Switcher = styled.div`
 
 const availableTabs = [
     'Colors',
-    'Typography',
+    'Misc',
 ]
 
 const PrefsDialog: React.FC<PrefsDialogProps> = (props) => {
@@ -88,9 +89,11 @@ const PrefsDialog: React.FC<PrefsDialogProps> = (props) => {
     const renderTabView = () => {
         if (activeTab === 0) {
             return <PrefsColorMenu />
+        } else if (activeTab === 1) {
+            return <PrefsMiscMenu />
         }
     }
-    
+
 
     return (
         <BasicDialog show={props.show} onHide={props.onHide} custom={'background-color: hsla(195, 20%, 10%, 0.75); backdrop-filter: blur(5px); overflow: hidden;'}>
@@ -107,7 +110,10 @@ const PrefsDialog: React.FC<PrefsDialogProps> = (props) => {
 
                 <div className='switch-view'>
                     <strong className='Title'>{availableTabs[activeTab]}</strong>
-                    {renderTabView()}
+                    <div style={{ padding: '2em 0', paddingLeft: '2em' }}>
+
+                        {renderTabView()}
+                    </div>
                 </div>
 
             </PrefsDialogWrapper>
