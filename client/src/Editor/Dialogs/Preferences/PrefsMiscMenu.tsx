@@ -37,7 +37,7 @@ const PrefsMiscMenu = () => {
 
             editorFunctions.savePreferences(newPrefs);
 
-        }, 2000)
+        }, 500)
         editorFunctions.setPrefsSaveTimeout(timeoutID);
     }
 

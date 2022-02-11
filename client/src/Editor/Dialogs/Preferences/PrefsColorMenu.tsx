@@ -116,7 +116,7 @@ const ColorBox: React.FC<ColorBoxProps> = (props) => {
         let newPrefs = { newCustomTheme: newTheme };
         let timeoutID = setTimeout(() => {
             editorFunctions.savePreferences(newPrefs);
-        }, 2000)
+        }, 1000)
         editorFunctions.setPrefsSaveTimeout(timeoutID);
 
     }
@@ -170,7 +170,7 @@ const PrefsColorMenu = () => {
 
         let timeoutID = setTimeout(() => {
             editorFunctions.savePreferences(newPrefs);
-        }, 2000)
+        }, 1000)
 
         editorFunctions.setPrefsSaveTimeout(timeoutID);
     }

@@ -467,6 +467,7 @@ const EditorContextProvider: React.FC = (props) => {
             window.localStorage.setItem('preferences', JSON.stringify(prefs));
 
         }
+        setPrefsSaveTimeout(undefined);
     }
 
     /* TEMP */

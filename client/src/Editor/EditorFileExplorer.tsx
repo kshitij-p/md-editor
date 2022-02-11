@@ -204,6 +204,11 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
         props.openDeleteDiag(true);
     }
 
+    const handleOpenFile = () => {
+        setMenuOpen(false);
+        editorFunctions.openCloudFile(id);
+    }
+
     const handleOpenOnDoubleClick = (e: React.MouseEvent & { target: any }) => {
 
         /* Prevent menu and control button double click from opening */
@@ -254,6 +259,10 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
 
             <div className="control-menu" style={{ opacity: menuOpen ? '1' : '0', visibility: menuOpen ? 'visible' : 'hidden' }}
                 ref={menuRef}>
+                <div className="option" onClick={handleOpenFile} >
+                    <b>Open File</b>
+
+                </div>
                 <div className="option" onClick={handleRenameFile}>
                     <b>Rename File</b>
 

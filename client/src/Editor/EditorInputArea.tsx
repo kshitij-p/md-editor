@@ -165,7 +165,7 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     
     padding-left: 1em;
 
-    background-color: hsla(0, 0%, 70%, 0.1);
+    background-color: hsl(0, 0%, 5%);
 
     font-size: 2em;
     font-weight: 300;
@@ -710,10 +710,11 @@ const EditorInputArea: React.FC = () => {
     useEffect(() => {
 
         const saveBeforeUnload = (e: any) => {
-            if (editor.isUnsaved) {
+            if (editor.isUnsaved || editor.prefsSaveTimeout !== undefined) {
 
                 let dialogText = 'Save changes before leaving or wait 1-2 seconds for autosave to save them';
                 e.returnValue = dialogText;
+                /* Open snack bar here as well, if triggered by prefs, say wait 1 sec */
                 return dialogText;
             }
 
@@ -725,7 +726,7 @@ const EditorInputArea: React.FC = () => {
             window.removeEventListener('beforeunload', saveBeforeUnload);
         }
 
-    }, [editor.isUnsaved])
+    }, [editor.isUnsaved, editor.prefsSaveTimeout])
 
     useEffect(() => {
 
