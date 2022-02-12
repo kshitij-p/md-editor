@@ -1,4 +1,7 @@
-import React, { ChangeEvent, EventHandler, FormEvent, useState } from 'react';
+import React, { useState } from 'react';
+import styled from 'styled-components';
+
+
 
 
 
@@ -15,14 +18,15 @@ const Login: React.FC = (props) => {
         setPassword(e.currentTarget.value);
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>)=>{
-        if(!password || !username){
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        if (!password || !username) {
             e.preventDefault();
         }
     }
 
     return (
         <>
+
             <form method='POST' action='/api/login' onSubmit={handleSubmit}>
 
                 <input type="text" value={username} onChange={handleChangeUsername} name="email" />
