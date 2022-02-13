@@ -12,9 +12,6 @@ const RegisterDiv = styled.div`
     display: flex;
     align-items: center;
     
-
-    
-
     background-image: url('/register/bg-lg.png');
     background-color: hsla(0, 0%, 45%);
     background-blend-mode: overlay;
@@ -27,8 +24,7 @@ const RegisterDiv = styled.div`
         background-repeat: no-repeat;
     }
 
-    
-    
+        
 `
 
 const RegisterCard = styled.div`
@@ -47,7 +43,7 @@ const RegisterCard = styled.div`
     rgba(0, 0, 0, 0) 100%), linear-gradient(180.72deg, rgba(84, 84, 84, 0.85) -18.09%, rgba(112, 112, 112, 0.21) 108%, rgba(49, 49, 49, 0.35) 108%);
     
     box-shadow: 0px 0px 64px 0px hsl(0, 0%, 0%);
-
+    filter: brightness(1.25);
     backdrop-filter: blur(10px);
     border-radius: 20px;
 
@@ -148,10 +144,12 @@ const RegisterCard = styled.div`
             img {
 
                 position: absolute;
-                left: 0.75em;
+                left: 1em;
 
                 @media (max-width: ${responsiveSizes.phone}){
                     width: 1em;
+
+                    left: 0.75em;
                 }
             }
             
@@ -210,7 +208,7 @@ const RegisterCard = styled.div`
             cursor: pointer;
 
             :focus, :hover {
-                transform: translateY(-1px);
+                transform: translateY(-2px);
                 background-color: hsl(0, 0%, 80%);
                 color: black;
                 box-shadow: 0px 2px 16px 0px hsla(0, 0%, 100%, 0.5);
