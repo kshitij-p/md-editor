@@ -9,6 +9,7 @@ const Logout: React.FC = (props) => {
 
     const { setIsLoggedIn } = useContext(AuthContext);
 
+    /* Make request to logout to server */
     useEffect(() => {
 
         const requestLogout = async () => {

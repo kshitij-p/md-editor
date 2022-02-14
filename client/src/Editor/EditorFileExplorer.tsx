@@ -14,7 +14,6 @@ const EditorFileExplorerDiv = styled.div<{ collapsed: boolean }>`
 
     left: ${props => props.collapsed ? '-100%' : '0%'};
 
-    /* min-width: 20em; */
 
     height: 100vh;
     
@@ -218,6 +217,7 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
         editorFunctions.openCloudFile(id);
     }
 
+    /* Close menu */
     useEffect(() => {
 
         const hideOnOutsideClick = (e: MouseEvent & { target: any }) => {
@@ -482,6 +482,7 @@ const EditorFileExplorer: React.FC = (props) => {
             setEditingFile={setEditingFile} openDeleteDiag={openDeleteDiag} />)
     }
 
+    /* Fetch files if user is logged in */
     useEffect(() => {
 
         if (isLoggedIn) {

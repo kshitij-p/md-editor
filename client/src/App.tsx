@@ -20,10 +20,11 @@ const App: React.FC = () => {
 
   const { editorFunctions } = useContext(EditorContext);
 
+  /* Check if logged in or not whenever loggedin is set to false (this makes it so when the window is closed and if the login session has expired, the user
+    wont still be loggedin) */
   useEffect(() => {
 
     const updateLoggedIn = async () => {
-
       if (isLoggedIn) {
         return;
       }
@@ -52,7 +53,7 @@ const App: React.FC = () => {
     updateLoggedIn();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isLoggedIn])
 
   const alreadyLoggedRoute = (Target: React.FC) => {
     return !isLoggedIn ? <Target /> : <Navigate to="/" />

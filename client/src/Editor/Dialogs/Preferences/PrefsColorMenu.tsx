@@ -128,6 +128,7 @@ const ColorBox: React.FC<ColorBoxProps> = (props) => {
 
     }
 
+    /* Close sketch picker on outside click */
     useEffect(() => {
 
         const closeOnOutsideClick = (e: any) => {

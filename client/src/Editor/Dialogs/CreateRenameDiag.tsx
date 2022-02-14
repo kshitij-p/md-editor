@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { ModalProps } from 'react-overlays/esm/Modal';
 import styled from 'styled-components';
 import BasicDialog from '../../BasicDialog';
+import { SnackbarContext } from '../../Snackbar/SnackbarContext';
 import isValidFileName from '../../utils/isValidFileName';
 import { EditorContext } from '../EditorContext';
 
@@ -82,6 +83,7 @@ const CreateRenameDiagWrapper = styled.div`
 const CreateRenameDiag: React.FC<CreateRenameDiagProps> = (props) => {
 
     const { editorFunctions } = useContext(EditorContext);
+    const { snackbarFunctions } = useContext(SnackbarContext);
 
     const [newName, setNewName] = useState<string>('');
 
@@ -96,6 +98,7 @@ const CreateRenameDiag: React.FC<CreateRenameDiagProps> = (props) => {
         }
 
         if (!isValidFileName(newName)) {
+            snackbarFunctions.openSnackbar('Only file safe characters allowed')
             return;
         }
 

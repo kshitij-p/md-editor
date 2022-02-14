@@ -6,6 +6,7 @@ import { AuthContext } from '../Auth/AuthContext';
 import NotSavedDiag from './Dialogs/NotSavedDiag';
 import PrefsDialog from './Dialogs/PrefsDialog';
 import { EditorColorTheme } from '../utils/types';
+import { SnackbarContext } from '../Snackbar/SnackbarContext';
 
 
 const EditorInputAreaDiv = styled.div<{ explorerCollapsed: boolean }>`
@@ -18,7 +19,6 @@ const EditorInputAreaDiv = styled.div<{ explorerCollapsed: boolean }>`
     flex-direction: column;
 
     transition: 0.25s ease-in-out;
-    
 
     .menubar {
         min-height: 2em;
@@ -443,6 +443,7 @@ const EditorInputArea: React.FC = () => {
 
     const { isLoggedIn } = useContext(AuthContext);
     const { editorState, editorFunctions } = useContext(EditorContext);
+    const { snackbarFunctions } = useContext(SnackbarContext);
 
     const { editor } = editorState;
 
@@ -711,7 +712,7 @@ const EditorInputArea: React.FC = () => {
 
     }, [editor.editorPaneRef, editor.editorHeight, renderedView.renderedViewDivRef])
 
-
+    /* Show warning that reminds of losing progress when prefs or file is unsaved */
     useEffect(() => {
 
         const saveBeforeUnload = (e: any) => {
@@ -719,7 +720,6 @@ const EditorInputArea: React.FC = () => {
 
                 let dialogText = 'Save changes before leaving or wait 1-2 seconds for autosave to save them';
                 e.returnValue = dialogText;
-                /* Open snack bar here as well, if triggered by prefs, say wait 1 sec */
                 return dialogText;
             }
 
@@ -733,6 +733,7 @@ const EditorInputArea: React.FC = () => {
 
     }, [editor.isUnsaved, editor.prefsSaveTimeout])
 
+    /* Close menubar when clicking outside */
     useEffect(() => {
 
         const closeOnOutsideClick = (e: any) => {

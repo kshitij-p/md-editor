@@ -129,7 +129,7 @@ marked.use({ renderer: customRenderer, breaks: true, gfm: true });
 const EditorContextProvider: React.FC = (props) => {
 
     const { isLoggedIn } = useContext(AuthContext);
-    const { snackbarFunctions, snackbarState } = useContext(SnackbarContext);
+    const { snackbarFunctions } = useContext(SnackbarContext);
 
     const [inEditorMode, setInEditorMode] = useState(false);
     const [editorTextValue, setEditorTextValue] = useState('');
@@ -223,7 +223,16 @@ const EditorContextProvider: React.FC = (props) => {
             setCurrOpenFile(response.createdFile);
             setIsUnsaved(false);
 
+            snackbarFunctions.openSnackbar('Created file');
+
+        } else if (response.message === 'No duplicate file names allowed') {
+
+            snackbarFunctions.openSnackbar('No duplicate names allowed')
+
+        } else {
+            snackbarFunctions.openSnackbar('Failed to create')
         }
+
 
     }
 
@@ -237,12 +246,23 @@ const EditorContextProvider: React.FC = (props) => {
 
         let request = await fetch(`/api/files/${fileID}`, { method: "PUT", body: requestBody });
         let response = await request.json();
+
         if (request.status === 200 && !request.redirected && response.editedFile) {
+
             fetchUserFiles();
+
+            /* Update current open file if its the one being edited */
             if (response.editedFile._id === currOpenFile._id) {
                 setCurrOpenFile(response.editedFile);
+                snackbarFunctions.openSnackbar('Renamed file');
             }
+
+        } else if (response.message === "No duplicate file names allowed") {
+            snackbarFunctions.openSnackbar('No duplicate file names allowed')
+        } else {
+            snackbarFunctions.openSnackbar('Failed to rename')
         }
+
     }
 
     const deleteFile = async (fileID: string) => {
@@ -254,6 +274,9 @@ const EditorContextProvider: React.FC = (props) => {
 
         if (request.status === 200 && !request.redirected) {
             fetchUserFiles();
+            snackbarFunctions.openSnackbar('Deleted file');
+        } else {
+            snackbarFunctions.openSnackbar('Failed to delete');
         }
 
     }
@@ -393,9 +416,11 @@ const EditorContextProvider: React.FC = (props) => {
             if (request.status === 200 && !request.redirected && response.requestedFile) {
                 setCurrOpenFile(response.requestedFile);
                 setEditorTextValue(response.parsedFile.content);
+                snackbarFunctions.openSnackbar('Opened file');
             }
         } catch (e) {
             console.log('error while opening cloud file', e);
+            snackbarFunctions.openSnackbar('Failed to open file')
         }
 
         setIsLoading(false);
@@ -427,9 +452,11 @@ const EditorContextProvider: React.FC = (props) => {
 
                 clearEditorForNewFile();
                 setEditorTextValue(response.parsedFile.content);
+                snackbarFunctions.openSnackbar('Opened filed');
             }
         } catch (e) {
             console.log('error while opening local file', e);
+            snackbarFunctions.openSnackbar('Failed to open file')
         }
 
         setIsLoading(false);
@@ -501,11 +528,11 @@ const EditorContextProvider: React.FC = (props) => {
 
                 let request = await fetch('/api/preferences');
 
-                let response = await request.json();
-
-                let { preferences } = response;
 
                 if (request.status === 200 && !request.redirected && preferences) {
+                    let response = await request.json();
+
+                    let { preferences } = response;
 
                     let { customTheme, selectedTheme } = preferences.themes;
                     let { syncScrollingOn } = preferences.misc;

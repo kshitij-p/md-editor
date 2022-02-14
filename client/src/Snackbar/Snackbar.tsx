@@ -25,16 +25,19 @@ const SnackbarDiv = styled.div`
     transition: 0.15s ease-in-out;
     z-index: 1041;
 
-    b {
+    p {
 
         margin-left: 0.5em;
 
-        text-transform: capitalize;
+        text-transform: lowercase;
         text-overflow: ellipsis;
         min-width: 0;
         white-space: pre;
         overflow: hidden;
 
+        :first-letter {
+            text-transform: uppercase;
+        }
     }
 
 
@@ -83,7 +86,7 @@ const Snackbar = () => {
     return (
         <SnackbarDiv style={{ visibility: `${open ? 'visible' : 'hidden'}`, opacity: `${open ? '1' : '0'}` }}>
 
-            <b>{message}</b>
+            <p>{message}</p>
             <button onClick={handleCloseOnClick}>
                 <img src="xmark.svg" alt="" />
             </button>
