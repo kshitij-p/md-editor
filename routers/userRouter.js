@@ -39,7 +39,7 @@ userRouter.post('/api/register', alreadyLoggedIn, async (req, res) => {
         return res.status(200).json({ message: "something went wrong", error: e })
     }
 
-    return res.status(200).redirect('/');
+    return res.status(200).redirect('/login');
 })
 
 userRouter.post('/api/logout', isLogged, (req, res,) => {

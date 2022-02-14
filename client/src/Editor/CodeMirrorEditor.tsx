@@ -92,7 +92,7 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
 
                     let selectedWord = cmInstance.getSelection();
 
-                    cmInstance.replaceSelection(wrapSelectedWord(event.key, selectedWord, true));
+                    cmInstance.replaceSelection(wrapSelectedWord(event.key, selectedWord, true), 'around');
                 }
             }
 

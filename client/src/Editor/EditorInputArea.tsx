@@ -352,6 +352,10 @@ const CodeMirrorEditorPane = styled.div<CodeMirrorEditorPaneProps>`
         background-color: ${props => props.theme.colors[2].color ? props.theme.colors[2].color : 'auto'};
         color: ${props => props.theme.colors[3].color ? props.theme.colors[3].color : 'auto'};
     }
+
+    .CodeMirror-selected {
+        background-color: ${props => props.theme.colors[4].color ? props.theme.colors[4].color : 'auto'} !important;
+    }
 `
 
 const EditorDropZone = styled.div`

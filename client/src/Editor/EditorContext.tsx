@@ -510,6 +510,54 @@ const EditorContextProvider: React.FC = (props) => {
         setPrefsSaveTimeout(undefined);
     }
 
+    const fetchPreferences = async () => {
+
+        setIsLoading(true);
+        if (isLoggedIn) {
+
+            let request = await fetch('/api/preferences');
+
+
+            if (request.status === 200 && !request.redirected && preferences) {
+                let response = await request.json();
+
+                let { preferences: prefs } = response;
+
+
+                let { customTheme: newCustomTheme, selectedTheme: newSelectedTheme } = prefs.themes;
+                let { syncScrollingOn: newSyncScrollingOn } = prefs.misc;
+
+                setCustomTheme(newCustomTheme);
+                setSelectedTheme(parseInt(newSelectedTheme));
+                setSyncScrollingOn(newSyncScrollingOn);
+            }
+
+        } else {
+            let storageVal = window.localStorage.getItem('preferences');
+
+            if (!storageVal) {
+                setIsLoading(false);
+                return;
+            }
+
+            let prefs = JSON.parse(storageVal);
+
+            if (!prefs) {
+                setIsLoading(false);
+                return;
+            }
+
+            let { customTheme: newCustomTheme, selectedTheme: newSelectedTheme } = prefs.themes;
+            let { syncScrollingOn: newSyncScrollingOn } = prefs.misc;
+
+            setCustomTheme(newCustomTheme);
+            setSelectedTheme(parseInt(newSelectedTheme));
+            setSyncScrollingOn(newSyncScrollingOn);
+        }
+
+        setIsLoading(false);
+    }
+
     /* TEMP */
     useEffect(() => {
         let newText = sampleResponse;
@@ -521,52 +569,7 @@ const EditorContextProvider: React.FC = (props) => {
     /* Get preferences */
     useEffect(() => {
 
-        const fetchPrefs = async () => {
-
-            setIsLoading(true);
-            if (isLoggedIn) {
-
-                let request = await fetch('/api/preferences');
-
-
-                if (request.status === 200 && !request.redirected && preferences) {
-                    let response = await request.json();
-
-                    let { preferences } = response;
-
-                    let { customTheme, selectedTheme } = preferences.themes;
-                    let { syncScrollingOn } = preferences.misc;
-
-                    setCustomTheme(customTheme);
-                    setSelectedTheme(selectedTheme);
-                    setSyncScrollingOn(syncScrollingOn);
-                }
-
-            } else {
-                let storageVal = window.localStorage.getItem('preferences');
-
-                if (!storageVal) {
-                    return;
-                }
-
-                let prefs = JSON.parse(storageVal);
-
-                if (!prefs) {
-                    return;
-                }
-
-                let { customTheme, selectedTheme } = prefs.themes;
-                let { syncScrollingOn } = prefs.misc;
-
-                setCustomTheme(customTheme);
-                setSelectedTheme(selectedTheme);
-                setSyncScrollingOn(syncScrollingOn);
-            }
-            setIsLoading(false);
-        }
-
-        fetchPrefs();
-
+        fetchPreferences();
 
     }, [isLoggedIn])
 

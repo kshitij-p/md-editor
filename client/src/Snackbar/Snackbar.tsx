@@ -88,7 +88,7 @@ const Snackbar = () => {
 
             <p>{message}</p>
             <button onClick={handleCloseOnClick}>
-                <img src="xmark.svg" alt="" />
+                <img src="/xmark.svg" alt="" />
             </button>
 
         </SnackbarDiv>

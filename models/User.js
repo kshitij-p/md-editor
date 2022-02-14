@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const defaultUserPrefs = require('./defaultUserPrefs');
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -17,29 +18,7 @@ const userSchema = new mongoose.Schema({
     },
     preferences: {
         type: Object,
-        default: {
-            themes: {
-                customTheme: {
-                    name: 'Custom',
-                    colors: [
-
-                        { name: 'Editor Background', color: '#263238' },
-                        { name: 'Editor Text', color: '#EEFFFF' },
-                        { name: 'Gutter Background', color: '#263238' },
-                        { name: 'Gutter Text', color: '#546E7A' },
-
-                    ]
-                },
-
-                selectedTheme: 0
-            },
-            misc: {
-                syncScrollingOn: true
-            }
-
-
-
-        }
+        default: defaultUserPrefs
     }
 
 })

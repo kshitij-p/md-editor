@@ -78,7 +78,7 @@ const Editor = () => {
             transitionDelay: '0.25s',
             visibility: `${explorerCollapsed ? 'visible' : 'hidden'}`, opacity: `${explorerCollapsed ? '1' : '0'}`
           }}>
-          <img src="chevronright.svg" />
+          <img src="/chevronright.svg" alt="" />
         </button>
 
       </EditorDiv>

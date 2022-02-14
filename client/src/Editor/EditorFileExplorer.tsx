@@ -249,7 +249,7 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
             </div>
 
             <div className="control-button" onClick={onControlClick} ref={controlButtonRef}>
-                <img src="kebabmenu.svg" alt="filesettings menu" />
+                <img src="/kebabmenu.svg" alt="filesettings menu" />
 
             </div>
 
@@ -500,17 +500,17 @@ const EditorFileExplorer: React.FC = (props) => {
                 <ExplorerControlsDiv>
 
                     <div className="search-bar">
-                        <img src="searchicon.svg" alt="" />
+                        <img src="/searchicon.svg" alt="" />
                         <input type="text" value={editorSearchQuery} onChange={handleSearchOnChange} />
                     </div>
 
 
                     <button className="add-btn" aria-label="Create new document button" onClick={handleAddOnClick}>
-                        <img src="plusicon.svg" alt="plus icon" />
+                        <img src="/plusicon.svg" alt="plus icon" />
                     </button>
 
                     <button className="collapse-btn" onClick={collapseExplorer}>
-                        <img src="chevronleft.svg" alt="left arrow icon" />
+                        <img src="/chevronleft.svg" alt="left arrow icon" />
                     </button>
 
                 </ExplorerControlsDiv>

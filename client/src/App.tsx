@@ -45,7 +45,6 @@ const App: React.FC = () => {
       } else {
         setIsLoggedIn(true);
       }
-
       editorFunctions.setSearchResultsLoading(false);
 
     }
