@@ -3,7 +3,6 @@ const matter = require('gray-matter')
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
 
 const session = require('express-session');
 
@@ -12,12 +11,9 @@ const LocalStrategy = require('passport-local').Strategy;
 const verifyUser = require('./utils/verifyUser');
 
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 const User = require('./models/User');
-const MDFile = require('./models/MDFile')
 const isLogged = require('./utils/isLogged');
-const getUserFiles = require('./utils/getUserFiles');
-
-const isValidFileName = require('./utils/isValidFileName');
 
 const userRouter = require('./routers/userRouter');
 const filesRouter = require('./routers/filesRouter');
@@ -55,14 +51,24 @@ let port = process.env.PORT || 8080;
 
 const app = express();
 
+mongoose.connect('mongodb://localhost:27017/mdeditor').then(() => {
+    console.log('Mongoose connected')
+}).catch((e) => {
+    console.log("Couldn't conenct to mongodb", e);
+})
+
+const store = MongoStore.create({ mongoUrl: 'mongodb://localhost:27017/mdeditor', ttl: 1000 * 60 * 60 * 24 * 7 });
+
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'sometotallysecuresecret',
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: false
-    }
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
+    store: store
 }))
 
 /* Init passport */
@@ -86,12 +92,6 @@ passport.deserializeUser(async (id, done) => {
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
-mongoose.connect('mongodb://localhost:27017/mdeditor').then(() => {
-    console.log('Mongoose connected')
-}).catch((e) => {
-    console.log("Couldn't conenct to mongodb", e);
-})
 
 app.use(userRouter);
 app.use(filesRouter);
@@ -118,7 +118,7 @@ app.put('/api/preferences', isLogged, async (req, res) => {
     user.preferences = preferences;
     await user.save();
 
-    return res.status(200).json({ message: "Successfully saved user preferences", newPreferences: preferences});
+    return res.status(200).json({ message: "Successfully saved user preferences", newPreferences: preferences });
 })
 
 app.get('/api/isLogged', isLogged, async (req, res) => {

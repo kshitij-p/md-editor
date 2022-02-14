@@ -11,7 +11,7 @@ const User = require('../models/User');
 const alreadyLoggedIn = require('../utils/alreadyLoggedIn');
 const isLogged = require('../utils/isLogged');
 
-userRouter.post('/api/login', alreadyLoggedIn, passport.authenticate('local', { failureRedirect: '/fail' }), (req, res) => {
+userRouter.post('/api/login', alreadyLoggedIn, passport.authenticate('local', { failureRedirect: '/login' }), (req, res) => {
     
     return res.status(200).redirect('/');
 })
