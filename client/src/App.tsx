@@ -8,6 +8,7 @@ import Login from './Auth/Login';
 import Register from './Auth/Register';
 import Logout from './Auth/Logout';
 import { AuthContext } from './Auth/AuthContext';
+import Snackbar from './Snackbar/Snackbar';
 
 const AppDiv = styled.div`
  
@@ -71,7 +72,7 @@ const App: React.FC = () => {
         <Route path="/register" element={alreadyLoggedRoute(Register)} />
         <Route path="/logout" element={protectedRoute(Logout)} />
       </Routes>
-
+      <Snackbar />
     </AppDiv>
 
   );

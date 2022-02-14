@@ -27,7 +27,10 @@ const PrefsMiscMenu = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
-        clearTimeout(editorState.editor.prefsSaveTimeout);
+        if (editorState.editor.prefsSaveTimeoutRef.current) {
+
+            clearTimeout(editorState.editor.prefsSaveTimeoutRef.current);
+        }
 
         editorFunctions.setSyncScrollingOn(e.currentTarget.checked);
 

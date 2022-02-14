@@ -1,6 +1,7 @@
 import { marked } from "marked";
 import React, { ChangeEvent, ChangeEventHandler, createContext, MouseEventHandler, RefObject, useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../Auth/AuthContext";
+import { SnackbarContext } from "../Snackbar/SnackbarContext";
 import defaultMDFile from "../utils/defaultMDFile";
 import { defaultCustomTheme, defaultThemes } from "../utils/defaultThemes";
 import customRenderer from "../utils/marked/customRenderer";
@@ -25,7 +26,7 @@ type EditorContextState = {
         isUnsaved: boolean;
         notSavedDiagOpen: boolean;
 
-        autoSaveTimeout: ReturnType<typeof setTimeout> | undefined;
+        autoSaveTimeoutRef: RefObject<ReturnType<typeof setTimeout> | undefined>;
         openFileInputRef: RefObject<HTMLInputElement>;
 
         isLoading: boolean;
@@ -34,6 +35,7 @@ type EditorContextState = {
 
         prefsDiagOpen: boolean;
         prefsSaveTimeout: ReturnType<typeof setTimeout> & number | undefined;
+        prefsSaveTimeoutRef: RefObject<ReturnType<typeof setTimeout> & number | undefined>;
 
         preferences: EditorPreferencesType
         customTheme: EditorColorTheme;
@@ -127,6 +129,7 @@ marked.use({ renderer: customRenderer, breaks: true, gfm: true });
 const EditorContextProvider: React.FC = (props) => {
 
     const { isLoggedIn } = useContext(AuthContext);
+    const { snackbarFunctions, snackbarState } = useContext(SnackbarContext);
 
     const [inEditorMode, setInEditorMode] = useState(false);
     const [editorTextValue, setEditorTextValue] = useState('');
@@ -157,6 +160,8 @@ const EditorContextProvider: React.FC = (props) => {
     const [createRenameDiagOpen, setCreateRenameDiagOpen] = useState(false);
 
     const [autoSaveTimeout, setAutoSaveTimeout] = useState(undefined);
+    const autoSaveTimeoutRef = useRef(autoSaveTimeout);
+    autoSaveTimeoutRef.current = autoSaveTimeout;
 
     const openFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,6 +172,8 @@ const EditorContextProvider: React.FC = (props) => {
     const [prefsDiagOpen, setPrefsDiagOpen] = useState(false);
 
     const [prefsSaveTimeout, setPrefsSaveTimeout] = useState(undefined);
+    const prefsSaveTimeoutRef = useRef(prefsSaveTimeout);
+    prefsSaveTimeoutRef.current = prefsSaveTimeout;
 
     const [customTheme, setCustomTheme] = useState(defaultCustomTheme);
     const [selectedTheme, setSelectedTheme] = useState(0);
@@ -290,7 +297,7 @@ const EditorContextProvider: React.FC = (props) => {
     /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
     const saveCurrentOpenFile = (autoTriggered = false) => {
         /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
-        clearTimeout(autoSaveTimeout);
+        clearTimeout(autoSaveTimeoutRef.current);
         if (currOpenFile.path && !isUnsaved) {
             /* Provide some visual feedback here */
             return;
@@ -440,7 +447,7 @@ const EditorContextProvider: React.FC = (props) => {
 
     const savePreferences = async (newPreferences: { newCustomTheme: EditorColorTheme, newSelectedTheme: number, newSyncScrolling: boolean }) => {
 
-        clearTimeout(prefsSaveTimeout);
+        clearTimeout(prefsSaveTimeoutRef.current);
         let { newCustomTheme, newSelectedTheme, newSyncScrolling } = newPreferences;
 
         let prefs = {
@@ -463,13 +470,14 @@ const EditorContextProvider: React.FC = (props) => {
 
             let request = await fetch('/api/preferences', { method: "PUT", body: requestData });
 
-            let response = await request.json();
 
             if (request.status === 200 && !request.redirected) {
-                /* Snackbar feedback */
+                snackbarFunctions.openSnackbar('Saved preferences')
             }
+
         } else {
             window.localStorage.setItem('preferences', JSON.stringify(prefs));
+            snackbarFunctions.openSnackbar('Saved preferences')
 
         }
         setPrefsSaveTimeout(undefined);
@@ -550,7 +558,7 @@ const EditorContextProvider: React.FC = (props) => {
             currOpenFile,
             isUnsaved,
             notSavedDiagOpen,
-            autoSaveTimeout,
+            autoSaveTimeoutRef,
             openFileInputRef,
 
             isLoading,
@@ -561,6 +569,7 @@ const EditorContextProvider: React.FC = (props) => {
             customTheme,
             preferences: preferences,
             prefsSaveTimeout,
+            prefsSaveTimeoutRef,
 
         },
         renderedView: {

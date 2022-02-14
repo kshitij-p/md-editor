@@ -59,7 +59,7 @@ const PrefsColorMenuDiv = styled.div<{ selectingColor: boolean }>`
                 position: absolute;
                 top: 0;
                 left: 50%;
-                margin-top: -5%;
+                
                 margin-left: 0%;
 
                 opacity: 1;
@@ -72,6 +72,10 @@ const PrefsColorMenuDiv = styled.div<{ selectingColor: boolean }>`
             .hidden {
                 opacity: 0;
                 visibility: hidden;
+            }
+
+            .spaced {
+                margin-top: -5%;
             }
             
         }
@@ -100,7 +104,10 @@ const ColorBox: React.FC<ColorBoxProps> = (props) => {
 
     const handleOnColorChange: ColorChangeHandler = (newColor, e) => {
 
-        clearTimeout(editorState.editor.prefsSaveTimeout);
+        if (editorState.editor.prefsSaveTimeoutRef.current) {
+
+            clearTimeout(editorState.editor.prefsSaveTimeoutRef.current);
+        }
 
         let newColors = editorState.editor.customTheme.colors.map((x, index) => {
             if (index === props.boxIndex) {
@@ -145,7 +152,7 @@ const ColorBox: React.FC<ColorBoxProps> = (props) => {
             <b>{props.title}</b>
             <div className='colorbox' onClick={handleOnClick} ref={colorBoxRef}>
                 <div className='colorbox-color' style={{ backgroundColor: props.color.hex }}></div>
-                <SketchPicker className={`ColorPicker ${colorPickerOpen ? '' : 'hidden'}`} onChange={handleOnColorChange} color={props.color.hex} />
+                <SketchPicker className={`ColorPicker ${colorPickerOpen ? '' : 'hidden'} ${props.boxIndex <= 0 ? '' : 'spaced'} `} onChange={handleOnColorChange} color={props.color.hex} />
             </div>
 
 
@@ -161,7 +168,10 @@ const PrefsColorMenu = () => {
 
     const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 
-        clearTimeout(editorState.editor.prefsSaveTimeout);
+        if (editorState.editor.prefsSaveTimeoutRef.current) {
+
+            clearTimeout(editorState.editor.prefsSaveTimeoutRef.current);
+        }
 
         editorFunctions.setSelectedTheme(parseInt(e.target.value));
 

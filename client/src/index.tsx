@@ -4,16 +4,20 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom'
 import { AuthContextProvider } from './Auth/AuthContext';
 import { EditorContextProvider } from './Editor/EditorContext';
+import { SnackbarProvider } from './Snackbar/SnackbarContext';
 
 ReactDOM.render(
 
   <BrowserRouter>
     <React.StrictMode>
       <AuthContextProvider>
-        <EditorContextProvider>
+        <SnackbarProvider>
+          <EditorContextProvider>
 
-          <App />
-        </EditorContextProvider>
+            <App />
+
+          </EditorContextProvider>
+        </SnackbarProvider>
       </AuthContextProvider>
     </React.StrictMode>
   </BrowserRouter>,

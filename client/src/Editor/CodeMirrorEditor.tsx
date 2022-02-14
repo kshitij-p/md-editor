@@ -54,7 +54,7 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
     }
 
     handleBeforeChange = (event: ChangeEvent, data: any, value: string) => {
-        clearTimeout(this.context.editorState.editor.autoSaveTimeout);
+        clearTimeout(this.context.editorState.editor.autoSaveTimeoutRef.current);
 
         this.context.editorFunctions.setEditorTextValue(value);
 
