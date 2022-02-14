@@ -229,7 +229,7 @@ const RegisterCard = styled.div`
 
 const Register: React.FC = (props) => {
 
-    const [username, setUsername] = useState('ee');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleChangeUsername = (e: React.FormEvent<HTMLInputElement>) => {

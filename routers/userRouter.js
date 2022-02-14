@@ -12,7 +12,8 @@ const alreadyLoggedIn = require('../utils/alreadyLoggedIn');
 const isLogged = require('../utils/isLogged');
 
 userRouter.post('/api/login', alreadyLoggedIn, passport.authenticate('local', { failureRedirect: '/fail' }), (req, res) => {
-    return res.status(200).json(req.user);
+    
+    return res.status(200).redirect('/');
 })
 
 userRouter.post('/api/register', alreadyLoggedIn, async (req, res) => {
@@ -38,15 +39,12 @@ userRouter.post('/api/register', alreadyLoggedIn, async (req, res) => {
         return res.status(200).json({ message: "something went wrong", error: e })
     }
 
-    return res.status(200).json({
-        message: "Successfully registered",
-        user: user
-    });
+    return res.status(200).redirect('/');
 })
 
 userRouter.post('/api/logout', isLogged, (req, res,) => {
     req.logout();
-    return res.redirect('/success');
+    return res.redirect('/');
 })
 
 module.exports = userRouter;
