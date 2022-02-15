@@ -115,6 +115,7 @@ type EditorContextType = {
         setSyncScrollingOn: Function
 
         savePreferences: Function;
+        resetPreferences: Function;
 
     },
 
@@ -343,6 +344,9 @@ const EditorContextProvider: React.FC = (props) => {
 
         }
 
+        if (editorRef.current && editorRef.current.editor) {
+            editorRef.current.editor.doc.markClean();
+        }
     }
 
     const createNewEditorFile = () => {
@@ -472,7 +476,7 @@ const EditorContextProvider: React.FC = (props) => {
         setPrefsDiagOpen(true);
     }
 
-    const savePreferences = async (newPreferences: { newCustomTheme: EditorColorTheme, newSelectedTheme: number, newSyncScrolling: boolean }) => {
+    const savePreferences = async (newPreferences: { newCustomTheme?: EditorColorTheme, newSelectedTheme?: number, newSyncScrolling?: boolean }, showSnackbar: boolean = true) => {
 
         clearTimeout(prefsSaveTimeoutRef.current);
         let { newCustomTheme, newSelectedTheme, newSyncScrolling } = newPreferences;
@@ -498,13 +502,17 @@ const EditorContextProvider: React.FC = (props) => {
             let request = await fetch('/api/preferences', { method: "PUT", body: requestData });
 
 
-            if (request.status === 200 && !request.redirected) {
+            if (request.status === 200 && !request.redirected && showSnackbar) {
                 snackbarFunctions.openSnackbar('Saved preferences')
             }
 
         } else {
             window.localStorage.setItem('preferences', JSON.stringify(prefs));
-            snackbarFunctions.openSnackbar('Saved preferences')
+
+            if (showSnackbar) {
+
+                snackbarFunctions.openSnackbar('Saved preferences')
+            }
 
         }
         setPrefsSaveTimeout(undefined);
@@ -557,6 +565,18 @@ const EditorContextProvider: React.FC = (props) => {
 
         setIsLoading(false);
     }
+
+    const resetPreferences = async () => {
+
+        clearTimeout(prefsSaveTimeoutRef.current);
+
+        setCustomTheme(defaultCustomTheme);
+        savePreferences({ newCustomTheme: defaultCustomTheme }, false);
+
+        snackbarFunctions.openSnackbar('Reset custom theme');
+    }
+
+
 
     /* TEMP */
     useEffect(() => {
@@ -656,6 +676,7 @@ const EditorContextProvider: React.FC = (props) => {
         setCustomTheme,
         setSelectedTheme,
         savePreferences,
+        resetPreferences,
         setSyncScrollingOn,
     };
 

@@ -99,15 +99,75 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
         }
     }
 
-    handleKeyUp = (cmInstance: CodeMirror, event: KeyboardEvent) => {
+    handleKeyUp = (cmInstance: any, event: KeyboardEvent) => {
         if (this.context.editorState.editor.inEditorMode) {
 
+            /* CHECK FOR SHORTCUTS THAT NEED ALT HELD */
+            if (event.altKey) {
 
+                if (event.code === "ArrowUp") {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    let currPos = cmInstance.doc.getCursor();
+
+                    let currLine = currPos.line;
+                    let prevLine = currLine - 1;
+
+                    let currLineContent = cmInstance.doc.getLine(currLine);
+                    let prevLineContent = cmInstance.doc.getLine(prevLine);
+
+                    /* If shift is also held, duplicate instead of moving */
+                    if (event.shiftKey) {
+
+                        cmInstance.doc.replaceRange('\n', { line: prevLine });
+                        cmInstance.doc.replaceRange(currLineContent, { line: currLine });
+
+                        cmInstance.doc.setCursor({ line: currLine });
+                        return;
+                    }
+
+                    cmInstance.doc.replaceRange(currLineContent, { line: prevLine, ch: 0 }, { line: prevLine, ch: prevLineContent.length });
+                    cmInstance.doc.replaceRange(prevLineContent, { line: currLine, ch: 0 }, { line: currLine, ch: currLineContent.length });
+
+                    /* We switch to the previous line since thats the position our original line has gone to */
+                    cmInstance.doc.setCursor({ line: prevLine });
+
+                } else if (event.code === "ArrowDown") {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    let currPos = cmInstance.doc.getCursor();
+
+                    let currLine = currPos.line;
+                    let nextLine = currLine + 1;
+
+                    let currLineContent = cmInstance.doc.getLine(currLine);
+                    let nextLineContent = cmInstance.doc.getLine(nextLine);
+
+                    /* If shift is also held, duplicate instead of moving */
+                    if (event.shiftKey) {
+
+                        cmInstance.doc.replaceRange('\n', { line: currLine });
+                        cmInstance.doc.replaceRange(currLineContent, { line: nextLine });
+
+                    } else {
+
+                        cmInstance.doc.replaceRange(currLineContent, { line: nextLine, ch: 0 }, { line: nextLine, ch: nextLineContent.length });
+                        cmInstance.doc.replaceRange(nextLineContent, { line: currLine, ch: 0 }, { line: currLine, ch: currLineContent.length });
+                    }
+
+                    /* We switch to the next line since thats the position our original line has gone to */
+                    cmInstance.doc.setCursor({ line: nextLine });
+                }
+
+            }
+            /* CHECK FOR SHORTCUTS THAT NEED ALT HELD */
 
             if (event.code === "Escape") {
                 this.context.editorFunctions.setInEditorMode(false);
             }
-
 
         }
     }

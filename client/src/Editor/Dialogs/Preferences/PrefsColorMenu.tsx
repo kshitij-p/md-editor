@@ -82,7 +82,32 @@ const PrefsColorMenuDiv = styled.div<{ selectingColor: boolean }>`
         
     }
 
-    
+    .options-list {
+
+        .reset-btn {
+            border: none;
+            outline: none;
+
+            margin-left: 0.25em;
+
+            min-height: 2em;
+            padding: 0 1em;
+
+            background-color: hsla(235, 20%, 30%, 0.4);
+            border-radius: 5px;
+            color: white;
+
+            font-size: 1.75em;
+            align-self: center;
+
+            transition: 0.15s ease-in-out;
+            cursor: pointer; 
+
+            :hover, :focus {
+                background-color: hsl(235, 35%, 5%, 1);
+            }
+        }
+    }
 `
 
 type ColorBoxProps = {
@@ -186,6 +211,10 @@ const PrefsColorMenu = () => {
         editorFunctions.setPrefsSaveTimeout(timeoutID);
     }
 
+    const handleResetOnClick = () => {
+        editorFunctions.resetPreferences();
+    }
+
     return (
         <PrefsColorMenuDiv selectingColor={false} >
 
@@ -205,7 +234,7 @@ const PrefsColorMenu = () => {
                             return <ColorBox title={color.name} color={{ hex: color.color } as ColorResult} boxIndex={index} key={index} />
                         })}
 
-
+                        <button className='reset-btn' onClick={handleResetOnClick}>Reset custom theme</button>
                     </div>
                 </>
                 :

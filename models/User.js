@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const defaultUserPrefs = require('./defaultUserPrefs');
+const defaultUserPrefs = require('../utils/defaultUserPrefs');
 
 const userSchema = new mongoose.Schema({
     email: {

@@ -342,7 +342,7 @@ const CodeMirrorEditorPane = styled.div<CodeMirrorEditorPaneProps>`
     .visible {
         visibility: visible;
     }
-
+    
     .CodeMirror {
         background-color: ${props => props.theme.colors[0].color ? props.theme.colors[0].color : 'auto'};
         color: ${props => props.theme.colors[1].color ? props.theme.colors[1].color : 'auto'};
@@ -721,10 +721,8 @@ const EditorInputArea: React.FC = () => {
 
         const saveBeforeUnload = (e: any) => {
             if (editor.isUnsaved || editor.prefsSaveTimeout !== undefined) {
-
-                let dialogText = 'Save changes before leaving or wait 1-2 seconds for autosave to save them';
-                e.returnValue = dialogText;
-                return dialogText;
+                e.preventDefault();
+                e.returnValue = '';
             }
 
         }
