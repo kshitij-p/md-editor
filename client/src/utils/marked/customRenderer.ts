@@ -21,7 +21,7 @@ const customRenderer: Renderer & any & CustomRendererType = {
 
     link(href: string, title: string, text: string) {
 
-        return `<span class="rendered-link-wrapper"><a class="rendered-link" href=${href}>${text}</a>${title ? `<span class="rendered-link-tooltip">${title}</span>` : ''}</span>`
+        return `<span class="rendered-link-wrapper"><a class="rendered-link" aria-label="${title}" href=${href}>${text}</a>${title ? `<span class="rendered-link-tooltip"><b>${title}</b></span>` : ''}</span>`
         
     },
     paragraph(text: string) {
@@ -34,7 +34,8 @@ const customRenderer: Renderer & any & CustomRendererType = {
             }
             , 'rendered-paragraph');
 
-    }
+    },
+    
 
 }
 

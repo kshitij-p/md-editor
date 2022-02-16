@@ -84,10 +84,14 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
     handleKeyDown = (cmInstance: any, event: KeyboardEvent) => {
         if (this.context.editorState.editor.inEditorMode) {
 
+            if(event.key === "Alt"){
+                event.preventDefault();
+            }
+
             /* Check if a selection is present */
             if (cmInstance.getSelection()) {
 
-                if (bracketKeys.includes(event.key)) {
+                if (bracketKeys.includes(event.key) && !event.altKey && !event.ctrlKey) {
                     event.preventDefault();
 
                     let selectedWord = cmInstance.getSelection();
@@ -124,7 +128,7 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
                         cmInstance.doc.replaceRange('\n', { line: prevLine });
                         cmInstance.doc.replaceRange(currLineContent, { line: currLine });
 
-                        cmInstance.doc.setCursor({ line: currLine });
+                        cmInstance.doc.setCursor({ line: currLine, ch: currPos.ch});
                         return;
                     }
 
@@ -132,7 +136,7 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
                     cmInstance.doc.replaceRange(prevLineContent, { line: currLine, ch: 0 }, { line: currLine, ch: currLineContent.length });
 
                     /* We switch to the previous line since thats the position our original line has gone to */
-                    cmInstance.doc.setCursor({ line: prevLine });
+                    cmInstance.doc.setCursor({ line: prevLine, ch: currPos.ch});
 
                 } else if (event.code === "ArrowDown") {
                     event.preventDefault();
@@ -159,7 +163,7 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
                     }
 
                     /* We switch to the next line since thats the position our original line has gone to */
-                    cmInstance.doc.setCursor({ line: nextLine });
+                    cmInstance.doc.setCursor({ line: nextLine, ch: currPos.ch});
                 }
 
             }

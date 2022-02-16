@@ -7,6 +7,7 @@ import NotSavedDiag from './Dialogs/NotSavedDiag';
 import PrefsDialog from './Dialogs/PrefsDialog';
 import { EditorColorTheme } from '../utils/types';
 import { SnackbarContext } from '../Snackbar/SnackbarContext';
+import SyntaxDiag from './Dialogs/Help/SyntaxDiag';
 
 
 const EditorInputAreaDiv = styled.div<{ explorerCollapsed: boolean }>`
@@ -109,7 +110,7 @@ const FileBar = styled.div<FileBarProps>`
             }
     }
 
-    .file-menu {
+    .menu-container {
         
         min-width: 5em;
 
@@ -122,7 +123,6 @@ const FileBar = styled.div<FileBarProps>`
 
         background-color: hsl(0, 0%, 30%);
         border-radius: 2px;
-        
         
         opacity: 1;
         visibility: visible;
@@ -144,8 +144,11 @@ const FileBar = styled.div<FileBarProps>`
                 background-color: hsl(0, 0%, 15%);
             }
         }
-
         
+        
+    }
+
+    .file-menu {
         b.save-btn {
             color: ${props => props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 60%)'};
 
@@ -192,6 +195,10 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
 
     }
 
+    > * {
+        max-width: 99%;
+    }
+
     p {
         margin: 1em 0;
         font-weight: 200;
@@ -213,31 +220,88 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
         line-height: 170%;
     }
 
+    blockquote {
+
+        padding: 0.5em 0.5em;
+        padding-right: 0;
+
+        blockquote {
+
+            margin: 1em 0;
+        }
+
+        background-color: hsl(0, 0%, 30%);
+        border-left: 0.25em solid white;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        p {
+            margin: 0;
+        }
+        
+
+    }
+
+    ol, ul {
+        margin-left: 1em;
+    }
+
+    ol {
+        display: flex;
+        flex-direction: column;
+        list-style: auto;
+    }
+
+    ul {
+
+        display: flex;
+        flex-direction: column;
+      
+        list-style: disc;
+    }
+
+    li {
+        ul, ol {
+
+            /* Compensate for the margin added by li (cant change li's display property or the bullet next to it will be removed) */
+            margin-bottom: -1em;
+            /* ^ Compensate for the margin added by li (cant change li's display property or the bullet next to it will be removed) ^ */
+        }
+        ul {
+            list-style: circle;
+            
+        }
+    }
+
     .rendered-heading {
-        margin: 1.8em 0;
+        margin: 1em 0;
     }
 
     .rendered-heading-1 {
         font-size: 1.6em;
-        font-weight: 700;
+        font-weight: 800;
     }
 
     .rendered-heading-2 {
         font-size: 1.5em;
-        font-weight: 500;
+        font-weight: 700;
     }
 
     .rendered-heading-3 {
         font-size: 1.4em;
-        font-weight: 400;
+        font-weight: 600;
     }
 
     .rendered-heading-4 {
         font-size: 1.3em;
+        font-weight: 500;
     }
 
     .rendered-heading-5 {
         font-size: 1.2em;
+        font-weight: 400;
     }
 
     .rendered-heading-6 {
@@ -245,40 +309,41 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     }
 
     span.rendered-link-wrapper {
-        position: relative;
-    }
-    
-    a.rendered-link {
-        
-        position: relative;
 
-        color: hsl(207, 90%, 64%);
-        text-decoration: none;
+        position: relative;
+        white-space: pre;
+        width: max-content;
 
-        :hover + span.rendered-link-tooltip {
-            opacity: 1;
-            visibility: visible;
+        a.rendered-link {
+            
+            position: relative;
+
+            color: hsl(207, 90%, 64%);
+            text-decoration: none;
+
+            :hover + span.rendered-link-tooltip {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            :hover {
+                text-decoration: underline;
+            }
+            
         }
 
-        :hover {
-            text-decoration: underline;
-        }
-        
-    }
-
-    span.rendered-link-tooltip {
-        position: absolute;
+        span.rendered-link-tooltip {
+            position: absolute;
             height: 100%;
-            width: 100%;
-            padding: 0.75em 1.25em;
+            padding: 0.75em 0.5em;
 
             top: 75%;
-            left: 60%;
+            left: 50%;
 
             display: flex;
-            justify-content: center;
             align-items: center;
 
+            
             background-color: hsl(0, 0%, 30%);
             border-radius: 5px;
             color: white;
@@ -286,16 +351,24 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
             opacity: 0;
             visibility: hidden;
 
-
             transition: 0.1s ease-in-out;
             transition-delay: 1s;
-        
-        :hover {
-            opacity: 1;
-            visibility: visible;
-
             
+            b {
+                text-overflow: ellipsis;
+                min-width: 0;
+                overflow: hidden;
+                width: 20rem;
+            }
+
+            :hover {
+                opacity: 1;
+                visibility: visible;
+
+                
+            }
         }
+
     }
     
 
@@ -545,12 +618,25 @@ const EditorInputArea: React.FC = () => {
     }
 
     const handleFileMenuOnClick = () => {
-        if (editor.currMenubarOption !== -1) {
+        if (editor.currMenubarOption === 0) {
             editorFunctions.closeMenubar();
             return;
         }
 
-        editorFunctions.openMenubarFileMenu();
+        editorFunctions.setCurrMenubarOption(0);
+    }
+
+    const handleHelpMenuOnClick = () => {
+        if (editor.currMenubarOption === 2) {
+            editorFunctions.closeMenubar();
+            return;
+        }
+
+        editorFunctions.setCurrMenubarOption(2);
+    }
+
+    const handleSyntaxHelpOnClick = () => {
+        editorFunctions.openSyntaxHelpDiag(true);
     }
 
     const handleOnNewClick = () => {
@@ -755,21 +841,38 @@ const EditorInputArea: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editor.currMenubarOption])
 
-
     return (
         <EditorInputAreaDiv explorerCollapsed={editorState.editorExplorer.explorerCollapsed}>
             <div className='menubar'>
                 <FileBar isLoggedIn={isLoggedIn}>
-                    <button onClick={handleFileMenuOnClick} className="MenubarButton MenubarOpener">File</button>
-                    <button onClick={editorFunctions.openPrefsDiag} className="MenubarButton ">Preferences</button>
+                    <div style={{ display: 'inline-block', position: 'relative' }}>
 
-                    <div className='file-menu'
-                        style={{ opacity: `${editor.currMenubarOption === 0 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 0 ? 'visible' : 'hidden'}` }}>
-                        <b onClick={handleOpenClick}>Open Local File</b>
-                        <b className='save-btn' onClick={handleSaveClick}>Save</b>
-                        <b onClick={handleOnNewClick}>New</b>
-                        <b onClick={handleDownloadClick}>Download File</b>
+                        <button onClick={handleFileMenuOnClick} className="MenubarButton MenubarOpener">File</button>
+
+                        <div className='file-menu menu-container'
+                            style={{ opacity: `${editor.currMenubarOption === 0 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 0 ? 'visible' : 'hidden'}` }}>
+                            <b onClick={handleOpenClick}>Open Local File</b>
+                            <b className='save-btn' onClick={handleSaveClick}>Save</b>
+                            <b onClick={handleOnNewClick}>New</b>
+                            <b onClick={handleDownloadClick}>Download File</b>
+                        </div>
+
                     </div>
+
+                    <div style={{ display: 'inline-block', position: 'relative' }}>
+                        <button onClick={editorFunctions.openPrefsDiag} className="MenubarButton ">Preferences</button>
+                    </div>
+
+                    <div style={{ display: 'inline-block', position: 'relative' }}>
+
+                        <button onClick={handleHelpMenuOnClick} className="MenubarButton MenubarOpener">Help</button>
+                        <div className='help-menu menu-container'
+                            style={{ opacity: `${editor.currMenubarOption === 2 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 2 ? 'visible' : 'hidden'}` }}>
+                            <b onClick={handleSyntaxHelpOnClick}>MD Syntax</b>
+                        </div>
+                    </div>
+
+
 
 
                 </FileBar>
@@ -816,6 +919,8 @@ const EditorInputArea: React.FC = () => {
             <NotSavedDiag show={editor.notSavedDiagOpen} onHide={editorFunctions.closeNotSavedDiag} />
 
             <PrefsDialog show={editor.prefsDiagOpen} onHide={editorFunctions.closePrefsDiag} />
+
+            <SyntaxDiag show={editor.syntaxHelpDiagOpen} onHide={editorFunctions.closeSyntaxHelpDiag} />
 
             <input type="file" multiple={false} accept=".md, .txt" className='EditorFileInput' style={{ display: 'none' }} onChange={handleOpenFileInputOnChange} ref={editor.openFileInputRef} />
 

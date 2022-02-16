@@ -6,7 +6,7 @@ import PrefsMiscMenu from './Preferences/PrefsMiscMenu';
 
 type PrefsDialogProps = {
     show: boolean;
-    onHide: Function & any;
+    onHide: Function & (() => void);
 }
 
 const PrefsDialogWrapper = styled.div`

@@ -40,6 +40,8 @@ type EditorContextState = {
         preferences: EditorPreferencesType
         customTheme: EditorColorTheme;
 
+        syntaxHelpDiagOpen: boolean;
+
     },
     renderedView: {
         renderedViewDivRef: RefObject<HTMLDivElement>;
@@ -102,9 +104,8 @@ type EditorContextType = {
 
         setCurrMenubarOption: Function;
         closeMenubar: Function;
-        openMenubarFileMenu: Function;
         setPrefsDiagOpen: Function;
-        closePrefsDiag: Function;
+        closePrefsDiag: Function & (() => void);
         openPrefsDiag: Function & MouseEventHandler<HTMLButtonElement>;
 
         setPrefsSaveTimeout: Function;
@@ -116,6 +117,9 @@ type EditorContextType = {
 
         savePreferences: Function;
         resetPreferences: Function;
+
+        closeSyntaxHelpDiag: Function & (() => void);
+        openSyntaxHelpDiag: Function;
 
     },
 
@@ -180,6 +184,8 @@ const EditorContextProvider: React.FC = (props) => {
     const [selectedTheme, setSelectedTheme] = useState(0);
 
     const [syncScrollingOn, setSyncScrollingOn] = useState(false);
+
+    const [syntaxHelpDiagOpen, setSyntaxHelpDiagOpen] = useState(false);
 
     const preferences = {
         selectedTheme: selectedTheme,
@@ -313,10 +319,6 @@ const EditorContextProvider: React.FC = (props) => {
         setCurrMenubarOption(-1);
     }
 
-    const openMenubarFileMenu = () => {
-        setCurrMenubarOption(0);
-    }
-
 
     /* To avoid random issues, this time out is cleared whenever saveCurrentOpenFile() runes as well */
     const saveCurrentOpenFile = (autoTriggered = false) => {
@@ -374,8 +376,6 @@ const EditorContextProvider: React.FC = (props) => {
         /* Else we show not saved diag as someone might want to save the result */
         setNotSavedDiagOpen(true);
         return;
-
-
 
 
     }
@@ -576,7 +576,13 @@ const EditorContextProvider: React.FC = (props) => {
         snackbarFunctions.openSnackbar('Reset custom theme');
     }
 
+    const closeSyntaxHelpDiag = () => {
+        setSyntaxHelpDiagOpen(false);
+    }
 
+    const openSyntaxHelpDiag = () => {
+        setSyntaxHelpDiagOpen(true);
+    }
 
     /* TEMP */
     useEffect(() => {
@@ -621,6 +627,7 @@ const EditorContextProvider: React.FC = (props) => {
             prefsSaveTimeout,
             prefsSaveTimeoutRef,
 
+            syntaxHelpDiagOpen,
         },
         renderedView: {
             renderedViewDivRef,
@@ -665,7 +672,6 @@ const EditorContextProvider: React.FC = (props) => {
 
         setCurrMenubarOption,
         closeMenubar,
-        openMenubarFileMenu,
 
         setPrefsDiagOpen,
         setPrefsSaveTimeout,
@@ -678,6 +684,9 @@ const EditorContextProvider: React.FC = (props) => {
         savePreferences,
         resetPreferences,
         setSyncScrollingOn,
+
+        closeSyntaxHelpDiag,
+        openSyntaxHelpDiag,
     };
 
 
