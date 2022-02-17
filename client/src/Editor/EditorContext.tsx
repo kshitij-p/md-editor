@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { marked } from "marked";
 import React, { ChangeEvent, ChangeEventHandler, createContext, MouseEventHandler, RefObject, useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../Auth/AuthContext";
@@ -197,7 +198,7 @@ const EditorContextProvider: React.FC = (props) => {
     }
 
     const parseEditorText = () => {
-        let parsed = marked.parse(editorTextValue);
+        let parsed = DOMPurify.sanitize(marked.parse(editorTextValue));
         setRenderedTextValue(parsed);
     }
 
