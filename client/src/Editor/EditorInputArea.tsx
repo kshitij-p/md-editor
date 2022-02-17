@@ -275,6 +275,14 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
         }
     }
 
+    table {
+        font-size: 0.75em;
+        * {
+            border: 1px solid white;
+            padding: 0.5em;
+        }
+    }
+
     .rendered-heading {
         margin: 1em 0;
     }
@@ -396,8 +404,10 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
             width: 100%;
         }
     }
-     
-   
+
+    div.rendered-inline {
+        display: inline-block;
+    }
 
 `
 

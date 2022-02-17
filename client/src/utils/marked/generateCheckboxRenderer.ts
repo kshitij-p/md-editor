@@ -4,7 +4,7 @@
 const generateCheckboxRenderer = (text: string, htmlTag: {
     opening: string, closing: string,
     default: string
-}, additionalClasses: string) => {
+}, additionalClasses: string = 'rendered-paragraph') => {
 
     const rule = /\[[ |x]\]/g;
 
@@ -46,7 +46,14 @@ const generateCheckboxRenderer = (text: string, htmlTag: {
             }
         }
 
-        generatedHtml = `<div class="${additionalClasses} ">` + generatedHtml + '</div>';
+
+        if (additionalClasses) {
+
+            generatedHtml = `<div class="${additionalClasses} ">` + generatedHtml + '</div>';
+
+        } else {
+            generatedHtml = `<p class="rendered-paragraph">` + generatedHtml + '</p>';
+        }
 
         return generatedHtml;
 
