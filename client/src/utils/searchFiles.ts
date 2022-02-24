@@ -49,6 +49,7 @@ const searchFiles = (array: MDFile[], query: string) => {
         }
     }
 
+    // eslint-disable-next-line array-callback-return
     let resultFiles = array.filter((x, index) => {
         if (results.includes(index)) {
             return x;

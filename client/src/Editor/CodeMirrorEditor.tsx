@@ -1,10 +1,10 @@
-import React, { ChangeEvent, PropsWithChildren } from "react";
-import { Controlled as CodeMirror, ICodeMirror, IControlledCodeMirror } from "react-codemirror2";
+import React, { ChangeEvent } from "react";
+import { Controlled as CodeMirror } from "react-codemirror2";
 
 
 import { EditorContext } from "./EditorContext";
 import styled from "styled-components";
-import { bracketKeys } from "../utils/helperKeys";
+import { bracketKeys, quoteKeys } from "../utils/helperKeys";
 import wrapSelectedWord from "../utils/wrapSelectedWord";
 import "codemirror/lib/codemirror.css";
 import './overrides.css';
@@ -84,12 +84,140 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
     handleKeyDown = (cmInstance: any, event: KeyboardEvent) => {
         if (this.context.editorState.editor.inEditorMode) {
 
-            if(event.key === "Alt"){
-                event.preventDefault();
-            }
 
-            /* Check if a selection is present */
-            if (cmInstance.getSelection()) {
+            /* CHECK FOR SHORTCUTS THAT NEED ALT HELD */
+            if (event.altKey) {
+                /* Disable mutli selection crosshair */
+                event.preventDefault();
+
+                if (event.code === "ArrowUp") {
+
+                    event.stopPropagation();
+
+                    let currPos = cmInstance.doc.getCursor(true);
+                    let lastPos = cmInstance.doc.getCursor(false);
+
+                    if (currPos.line <= 0) {
+                        return;
+                    }
+
+                    let currLine = currPos.line;
+                    let lastLine = lastPos.line;
+                    let prevLine = currLine - 1;
+
+
+                    let currLineContent = cmInstance.doc.getLine(currLine);
+                    let prevLineContent = cmInstance.doc.getLine(prevLine);
+                    let lastLineContent = cmInstance.doc.getLine(lastLine);
+
+                    let isSelected = cmInstance.doc.somethingSelected();
+
+                    let newContent = isSelected ? cmInstance.doc.getSelection() : currLineContent;
+
+                    /* If shift is also held, duplicate instead of moving */
+                    if (event.shiftKey) {
+
+                        cmInstance.doc.replaceRange('\n', { line: prevLine });
+                        cmInstance.doc.replaceRange(newContent, { line: currLine });
+
+                        if (isSelected) {
+                            cmInstance.doc.setSelection({ line: currLine, ch: 0 }, { line: lastLine })
+                        } else {
+                            cmInstance.doc.setCursor({ line: currLine, ch: currPos.ch });
+                        }
+
+                        return;
+                    }
+
+                    cmInstance.doc.replaceRange(newContent, { line: currLine - 1, ch: 0 }, { line: lastLine - 1 });
+                    cmInstance.doc.replaceRange(prevLineContent, { line: lastLine, ch: 0 }, { line: lastLine, ch: lastLineContent.length });
+
+
+                    if (isSelected) {
+                        cmInstance.doc.setSelection({ line: currLine - 1, ch: 0 }, { line: lastLine - 1 });
+                    } else {
+
+                        cmInstance.doc.setCursor({ line: prevLine, ch: currPos.ch });
+                    }
+
+
+                } else if (event.code === "ArrowDown") {
+                    event.stopPropagation();
+
+                    let currPos = cmInstance.doc.getCursor(true);
+                    let lastPos = cmInstance.doc.getCursor(false);
+
+                    let currLine = currPos.line;
+                    let lastLine = lastPos.line;
+
+                    let nextLine = lastLine + 1;
+
+                    let currLineContent = cmInstance.doc.getLine(currLine);
+                    let nextLineContent = cmInstance.doc.getLine(nextLine);
+
+                    let isSelected = cmInstance.doc.somethingSelected();
+
+                    let newContent = isSelected ? cmInstance.doc.getSelection() : currLineContent;
+
+                    if (event.shiftKey) {
+
+                        cmInstance.doc.replaceRange('\n', { line: nextLine });
+                        cmInstance.doc.replaceRange(newContent, { line: nextLine });
+
+                        if (isSelected) {
+                            let linesSelected = lastLine - currLine;
+                            let duplicatedLineStart = lastLine + 1;
+                            cmInstance.doc.setSelection({ line: duplicatedLineStart + linesSelected })
+                        } else {
+                            cmInstance.doc.setCursor({ line: nextLine, ch: currPos.ch });
+                        }
+
+                        return;
+
+                    }
+
+                    cmInstance.doc.replaceRange(newContent, { line: currLine + 1, ch: 0 }, { line: lastLine + 1 })
+                    cmInstance.doc.replaceRange(nextLineContent, { line: currLine, ch: 0 }, { line: currLine, ch: currLineContent.length });
+
+                    if (isSelected) {
+
+                        cmInstance.doc.setSelection({ line: currLine + 1, ch: 0 }, { line: lastLine + 1 });
+                    } else {
+                        cmInstance.doc.setCursor({ line: nextLine, ch: currPos.ch });
+                    }
+
+                    return;
+
+
+                }
+
+            }
+            /* ^ CHECK FOR SHORTCUTS THAT NEED ALT HELD ^ */
+
+            /* CHECK FOR SHORTCUTS THAT NEED CTRL HELD */
+            if (event.ctrlKey) {
+
+                if (event.shiftKey) {
+
+                    if (event.code === "KeyK") {
+
+
+                        let currPos = cmInstance.doc.getCursor(true);
+                        let lastPos = cmInstance.doc.getCursor(false);
+
+                        let currLine = currPos.line;
+                        let lastLine = lastPos.line;
+
+                        cmInstance.doc.replaceRange('', { line: currLine, ch: 0 }, { line: lastLine + 1, ch: 0 });
+                        cmInstance.doc.setCursor({ line: currLine, ch: currPos.ch })
+                    }
+                }
+
+            }
+            /* ^ CHECK FOR SHORTCUTS THAT NEED ALT HELD ^ */
+
+            /* Wrap words with brackets and quotes */
+            if (cmInstance.somethingSelected()) {
 
                 if (bracketKeys.includes(event.key) && !event.altKey && !event.ctrlKey) {
                     event.preventDefault();
@@ -98,7 +226,17 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
 
                     cmInstance.replaceSelection(wrapSelectedWord(event.key, selectedWord, true), 'around');
                 }
+
+                if (quoteKeys.includes(event.key) && !event.altKey && !event.ctrlKey) {
+                    event.preventDefault();
+
+                    let selectedWord = cmInstance.getSelection();
+
+                    cmInstance.replaceSelection(wrapSelectedWord(event.key, selectedWord, false), 'around');
+
+                }
             }
+            /* ^ Wrap words with brackets and quotes ^ */
 
         }
     }
@@ -106,72 +244,10 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
     handleKeyUp = (cmInstance: any, event: KeyboardEvent) => {
         if (this.context.editorState.editor.inEditorMode) {
 
-            /* CHECK FOR SHORTCUTS THAT NEED ALT HELD */
-            if (event.altKey) {
-
-                if (event.code === "ArrowUp") {
-
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    let currPos = cmInstance.doc.getCursor();
-
-                    let currLine = currPos.line;
-                    let prevLine = currLine - 1;
-
-                    let currLineContent = cmInstance.doc.getLine(currLine);
-                    let prevLineContent = cmInstance.doc.getLine(prevLine);
-
-                    /* If shift is also held, duplicate instead of moving */
-                    if (event.shiftKey) {
-
-                        cmInstance.doc.replaceRange('\n', { line: prevLine });
-                        cmInstance.doc.replaceRange(currLineContent, { line: currLine });
-
-                        cmInstance.doc.setCursor({ line: currLine, ch: currPos.ch});
-                        return;
-                    }
-
-                    cmInstance.doc.replaceRange(currLineContent, { line: prevLine, ch: 0 }, { line: prevLine, ch: prevLineContent.length });
-                    cmInstance.doc.replaceRange(prevLineContent, { line: currLine, ch: 0 }, { line: currLine, ch: currLineContent.length });
-
-                    /* We switch to the previous line since thats the position our original line has gone to */
-                    cmInstance.doc.setCursor({ line: prevLine, ch: currPos.ch});
-
-                } else if (event.code === "ArrowDown") {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    let currPos = cmInstance.doc.getCursor();
-
-                    let currLine = currPos.line;
-                    let nextLine = currLine + 1;
-
-                    let currLineContent = cmInstance.doc.getLine(currLine);
-                    let nextLineContent = cmInstance.doc.getLine(nextLine);
-
-                    /* If shift is also held, duplicate instead of moving */
-                    if (event.shiftKey) {
-
-                        cmInstance.doc.replaceRange('\n', { line: currLine });
-                        cmInstance.doc.replaceRange(currLineContent, { line: nextLine });
-
-                    } else {
-
-                        cmInstance.doc.replaceRange(currLineContent, { line: nextLine, ch: 0 }, { line: nextLine, ch: nextLineContent.length });
-                        cmInstance.doc.replaceRange(nextLineContent, { line: currLine, ch: 0 }, { line: currLine, ch: currLineContent.length });
-                    }
-
-                    /* We switch to the next line since thats the position our original line has gone to */
-                    cmInstance.doc.setCursor({ line: nextLine, ch: currPos.ch});
-                }
-
-            }
-            /* CHECK FOR SHORTCUTS THAT NEED ALT HELD */
-
             if (event.code === "Escape") {
                 this.context.editorFunctions.setInEditorMode(false);
             }
+
 
         }
     }

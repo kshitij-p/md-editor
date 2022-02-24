@@ -7,14 +7,16 @@ const wrapSelectedWord = (wrapperLetter: string, word: string, wrapUsingOpposite
     if (wrapUsingOpposite) {
         if (wrapperLetter === '(') {
 
-            newWord = wrapperLetter + word + String.fromCharCode(wrapperLetter.charCodeAt(0)+1);
+            newWord = wrapperLetter + word + String.fromCharCode(wrapperLetter.charCodeAt(0) + 1);
 
         } else {
-            newWord = wrapperLetter + word + String.fromCharCode(wrapperLetter.charCodeAt(0)+2);
+            newWord = wrapperLetter + word + String.fromCharCode(wrapperLetter.charCodeAt(0) + 2);
         }
+    } else {
+        newWord = wrapperLetter + word + wrapperLetter;
     }
 
-    
+
     return newWord;
 }
 

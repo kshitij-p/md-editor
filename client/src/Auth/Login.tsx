@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { SnackbarContext } from '../Snackbar/SnackbarContext';
 import { responsiveSizes } from '../utils/responsiveSizes';
 
 
@@ -195,6 +196,8 @@ const Login: React.FC = (props) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
+    const { snackbarFunctions } = useContext(SnackbarContext);
+
     const handleChangeUsername = (e: React.FormEvent<HTMLInputElement>) => {
         setUsername(e.currentTarget.value);
     }
@@ -203,10 +206,32 @@ const Login: React.FC = (props) => {
         setPassword(e.currentTarget.value);
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (!password || !username) {
-            e.preventDefault();
+            return;
         }
+
+        let form = document.querySelector('form');
+
+        if (!form) {
+            return;
+        }
+
+        let formData: any = new FormData(form);
+
+        let request = await fetch('/api/login', { method: "POST", body: new URLSearchParams(formData) });
+
+        let response = await request.json();
+
+        snackbarFunctions.openSnackbar(response.message);
+
+        if (response.loggedIn) {
+
+            window.location.href = '/';
+
+        }
+
     }
 
     return (
@@ -215,7 +240,7 @@ const Login: React.FC = (props) => {
             <LoginCard>
                 <h1 className='title-text'>Login</h1>
                 <p className='subtitle-text'>Don't have an account? <Link to={'/register'}>Register</Link></p>
-                <form method='POST' action='/api/login' onSubmit={handleSubmit}>
+                <form method='POST' action='' onSubmit={handleSubmit}>
 
                     <div className='input-wrapper'>
                         <input type="text" value={username} onChange={handleChangeUsername} name="email" />

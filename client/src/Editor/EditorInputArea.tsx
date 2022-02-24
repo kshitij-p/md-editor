@@ -140,6 +140,9 @@ const FileBar = styled.div<FileBarProps>`
             font-size: 1.25em;
             
             background-color: hsl(0, 0%, 30%);
+
+            cursor: pointer;
+
             :hover {
                 background-color: hsl(0, 0%, 15%);
             }
@@ -894,7 +897,7 @@ const EditorInputArea: React.FC = () => {
             <div className='inputarea-wrapper'>
 
 
-                <CodeMirrorEditorPane draggable={true}
+                <CodeMirrorEditorPane draggable={false}
                     onDragEnter={handleEditorDragEnter}
 
                     ref={editor.editorPaneRef} theme={editor.preferences.themes[editor.preferences.selectedTheme]}
@@ -908,7 +911,7 @@ const EditorInputArea: React.FC = () => {
                     <CodeMirrorEditor syncScroll={syncScroll} />
                 </CodeMirrorEditorPane>
 
-                <PaneSplitterDiv tabIndex={3} draggable={true} className='PaneSplitterDiv'
+                <PaneSplitterDiv tabIndex={3} draggable={false} className='PaneSplitterDiv'
                     style={{ top: `${editor.editorHeight}%`, display: `${editor.isLoading ? 'none' : 'block'}` }}>
                     <div className='pane-splitter-thumb' onDrag={onSplitterDrag} onDragStart={onSplitterDragStart}
                         onDragEnd={onSplitterDragEnd}
