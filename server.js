@@ -102,10 +102,7 @@ app.use(express.urlencoded({ extended: true }))
 
 if(process.env.NODE_ENV === 'production'){
     app.use(express.static('client/build'));
-
-    app.get('*', (req, res)=>{
-        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
-    })
+    
 }
 
 app.use(userRouter);
@@ -178,6 +175,14 @@ app.post('/api/parsefile', upload.single('file'), async (req, res) => {
     return res.status(200).json({ message: "Successfully parsed the requested file", parsedFile: parsedFile });
 
 })
+
+if(process.env.NODE_ENV === "production"){
+
+    app.get('*', (req, res)=>{
+        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    })
+    
+}
 
 
 app.listen(port, (e) => {
