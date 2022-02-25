@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const matter = require('gray-matter')
 const multer = require('multer');
@@ -47,17 +48,23 @@ const upload = multer({
 })
 
 
-let port = process.env.PORT || 8080;
+const port = process.env.PORT || 8080;
+
+let DBURL = 'mongodb://localhost:27017/mdeditor';
+
+if (process.env.NODE_ENV !== 'production') {
+    DBURL = process.env.MONGO_URL || 'mongodb://localhost:27017/mdeditor'
+}
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/mdeditor').then(() => {
+mongoose.connect(DBURL).then(() => {
     console.log('Mongoose connected')
 }).catch((e) => {
     console.log("Couldn't conenct to mongodb", e);
 })
 
-const store = MongoStore.create({ mongoUrl: 'mongodb://localhost:27017/mdeditor', ttl: 1000 * 60 * 60 * 24 * 7 });
+const store = MongoStore.create({ mongoUrl: DBURL, ttl: 1000 * 60 * 60 * 24 * 7 });
 
 
 app.use(session({
@@ -166,5 +173,5 @@ app.post('/api/parsefile', upload.single('file'), async (req, res) => {
 
 
 app.listen(port, (e) => {
-    console.log('Listening to port 8080')
+    console.log(`Listening to port ${port}`)
 })
