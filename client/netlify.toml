@@ -2,3 +2,4 @@
   from = "/api/*"
   to = "https://md-note-taker.herokuapp.com/"
   status = 200
+  force = true
