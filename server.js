@@ -50,10 +50,10 @@ const upload = multer({
 
 const port = process.env.PORT || 8080;
 
-let DBURL = 'mongodb://localhost:27017/mdeditor';
+let DBURL = process.env.MONGO_URL;
 
 if (process.env.NODE_ENV !== 'production') {
-    DBURL = process.env.MONGO_URL || 'mongodb://localhost:27017/mdeditor'
+    DBURL = 'mongodb://localhost:27017/mdeditor'
 }
 
 const app = express();
