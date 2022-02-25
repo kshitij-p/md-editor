@@ -585,13 +585,13 @@ const EditorContextProvider: React.FC = (props) => {
         setSyntaxHelpDiagOpen(true);
     }
 
-    /* TEMP */
-    useEffect(() => {
+    /* For development */
+    /* useEffect(() => {
         let newText = sampleResponse;
 
         setEditorTextValue(newText);
-    }, [])
-    /* TEMP */
+    }, []) */
+    /* For development */
 
     /* Get preferences */
     useEffect(() => {
