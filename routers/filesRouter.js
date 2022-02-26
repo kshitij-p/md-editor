@@ -3,13 +3,10 @@ const MDFile = require('../models/MDFile');
 const User = require('../models/User');
 const isLogged = require('../utils/isLogged');
 const isValidFileName = require('../utils/isValidFileName');
+
 const filesRouter = express.Router();
-
-const path = require('path');
-
-const fs = require('fs');
 const matter = require('gray-matter');
-
+const { fileBucket, bucketName } = require('../utils/fileBucket');
 
 filesRouter.get('/api/files', isLogged, async (req, res) => {
     let user = await User.findById(req.user._id).populate('files');
@@ -43,10 +40,9 @@ filesRouter.post('/api/files', isLogged, async (req, res) => {
         newFile = new MDFile({ name: name, author: req.user._id });
         await newFile.save();
 
-        let filePath = path.join(process.cwd(), 'public', 'userfiles', req.user._id.toString(), name + '.md')
+        let filePath = `${req.user._id.toString()}/${name}.md`;
 
-        await fs.promises.writeFile(filePath, fileData || '', { flag: 'wx' });
-
+        await fileBucket.putObject({ Bucket: bucketName, Key: filePath, Body: fileData || '' }).promise();
 
 
     } catch (e) {
@@ -93,6 +89,7 @@ filesRouter.get('/api/files/:id', isLogged, async (req, res) => {
 
 })
 
+/* Renames files */
 filesRouter.put('/api/files/:id', isLogged, async (req, res) => {
 
     let { id } = req.params;
@@ -145,7 +142,9 @@ filesRouter.put('/api/files/:id', isLogged, async (req, res) => {
     })
 
 })
+/* ^ Renames files ^ */
 
+/* Saves file */
 filesRouter.patch('/api/files/:id', isLogged, async (req, res) => {
 
     let { id } = req.params;
@@ -173,16 +172,12 @@ filesRouter.patch('/api/files/:id', isLogged, async (req, res) => {
         return res.status(400).json({ message: "You aren't authenticated to do that" });
     }
 
-    let saved = await new Promise((resolve, reject) => {
-        fs.writeFile(file.path, fileData || '', { flag: 'w' }, (e) => {
-            if (e) {
-                resolve(e);
-            }
-            resolve(true);
-        })
-    })
+    try {
 
-    if (saved !== true) {
+        await fileBucket.putObject({ Body: fileData, Key: file.path, Bucket: bucketName }).promise()
+
+    } catch (e) {
+
         return res.status(400).json({ message: "Coulnd't save", error: e })
     }
 
@@ -223,7 +218,7 @@ filesRouter.delete('/api/files/:id', isLogged, async (req, res) => {
 
 })
 
-filesRouter.post('/api/files/:id/parse', isLogged, async(req, res) => {
+filesRouter.post('/api/files/:id/parse', isLogged, async (req, res) => {
     let { id } = req.params;
 
     if (!id) {
@@ -243,11 +238,20 @@ filesRouter.post('/api/files/:id/parse', isLogged, async(req, res) => {
         return res.status(400).json({ message: "You are not authenticated to view this file" });
     }
 
-    let parsedFile;
+    let parsedFile, toParse;
 
     try {
 
-        parsedFile = matter.read(file.path);
+        let awsFile = await fileBucket.getObject({ Bucket: bucketName, Key: file.path }).promise();
+        toParse = awsFile.Body.toString('utf8');
+
+    } catch (e) {
+        return res.status(500).json({ message: "Error while retrieving from AWS", e })
+    }
+
+    try {
+
+        parsedFile = matter(toParse);
 
     } catch (e) {
         return res.status(500).json({ message: "Couldnt parse the requested file", error: e });

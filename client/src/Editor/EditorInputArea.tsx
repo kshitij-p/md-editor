@@ -801,16 +801,26 @@ const EditorInputArea: React.FC = () => {
     /* Set max heights to avoid overflows */
     useEffect(() => {
 
-        let editorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
+        const resizePanels = () => {
 
-        if (editorHeight && editor.editorPaneRef.current && renderedView.renderedViewDivRef.current) {
-            let maxHeight = editorHeight * (editor.editorHeight / 100);
-            editor.editorPaneRef.current.style.maxHeight = `${maxHeight}px`;
+            let editorHeight = document.querySelector('.inputarea-wrapper')?.clientHeight;
 
-            editor.editorPaneRef.current.style.maxHeight = `${maxHeight}px`;
+            if (editorHeight && editor.editorPaneRef.current && renderedView.renderedViewDivRef.current) {
+                let maxHeight = editorHeight * (editor.editorHeight / 100);
+                editor.editorPaneRef.current.style.maxHeight = `${maxHeight}px`;
 
-            renderedView.renderedViewDivRef.current.style.maxHeight = `${editorHeight - maxHeight >= 10 ? editorHeight - maxHeight : 10}px`
+                editor.editorPaneRef.current.style.maxHeight = `${maxHeight}px`;
 
+                renderedView.renderedViewDivRef.current.style.maxHeight = `${editorHeight - maxHeight >= 10 ? editorHeight - maxHeight : 10}px`
+
+            }
+        }
+
+        resizePanels();
+        window.addEventListener('resize', resizePanels);
+
+        return function cleanup() {
+            window.removeEventListener('resize', resizePanels);
         }
 
     }, [editor.editorPaneRef, editor.editorHeight, renderedView.renderedViewDivRef])

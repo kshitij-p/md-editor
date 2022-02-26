@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const path = require('path');
-const getUserFiles = require('../utils/getUserFiles');
 const User = require('./User');
 const fs = require('fs');
+const { fileBucket, bucketName } = require('../utils/fileBucket');
 
 const mdFileSchema = new mongoose.Schema({
     name: {
@@ -28,6 +28,9 @@ const mdFileSchema = new mongoose.Schema({
 mdFileSchema.pre('remove', async function (next) {
 
     try {
+
+        await fileBucket.deleteObject({ Bucket: bucketName, Key: this.path }).promise()
+
         let author = await User.findById(this.author);
 
         let newFiles = author.files.filter((x) => {
@@ -38,14 +41,6 @@ mdFileSchema.pre('remove', async function (next) {
 
         author.files = newFiles;
         await author.save();
-
-    } catch (e) {
-        console.log(e);
-
-    }
-
-    try {
-        await fs.promises.rm(this.path, { force: true });
 
     } catch (e) {
         console.log('error while deleting', e);
@@ -60,7 +55,7 @@ mdFileSchema.pre('save', async function (next) {
 
     let oldPath = this.path;
 
-    let filePath = path.join(process.cwd(), 'public', 'userfiles', this.author._id.toString(), this.name + '.md')
+    let filePath = `${this.author._id.toString()}/${this.name}.md`;
 
     this.path = filePath;
     this.lastModified = Date.now();
@@ -83,36 +78,34 @@ mdFileSchema.pre('save', async function (next) {
 
     }
 
-    /* Check if directory for the user exists first */
-    let files = await getUserFiles(this.author._id.toString());
+    /* Renames  */
+    if (oldPath && oldPath !== filePath) {
+        let file;
 
-    /* Updates */
-    if (oldPath) {
-        if (files.includes(path.basename(oldPath))) {
+        /* Check AWS S3 if our file exists or not */
+        try {
+
+            file = await fileBucket.headObject({ Bucket: bucketName, Key: oldPath }).promise()
+        } catch (e) {
+            if (e.code !== 'NotFound') {
+                console.log('error while finding', e);
+                return next();
+            }
+            file = null;
+        }
+
+        if (file) {
 
             try {
-
-                await fs.promises.rename(oldPath, filePath);
-
+                await fileBucket.copyObject({ Bucket: bucketName, Key: filePath, CopySource: `/${bucketName}/${oldPath}` }).promise();
+                await fileBucket.deleteObject({ Bucket: bucketName, Key: oldPath }).promise();
             } catch (e) {
                 console.log('error while renaming', e);
             }
-            return next();
-        } else {
-
-            /* Creates if no file to update */
-            try {
-                await fs.promises.writeFile(filePath, '', { flag: 'wx' });
-            } catch (e) {
-                if (e.errno != -4075 && e.code !== 'EEXIST') {
-
-                    console.log('error while creating', e);
-                }
-            }
-
-            next();
         }
     }
+
+    return next();
 
 })
 
