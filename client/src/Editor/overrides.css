@@ -1,10 +1,8 @@
 .CodeMirror {
-    height: 100%;
-
-    cursor: grabbing;
+  height: 100%;
 }
 
 .CodeMirror-scroll {
-    max-width: 100%;
-    overflow-x: hidden !important;
+  max-width: 100%;
+  overflow-x: hidden !important;
 }

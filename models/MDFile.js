@@ -55,7 +55,7 @@ mdFileSchema.pre('save', async function (next) {
 
     let oldPath = this.path;
 
-    let filePath = `${this.author._id.toString()}/${this.name}.md`;
+    let filePath = `userfiles/${this.author._id.toString()}/${this.name}.md`;
 
     this.path = filePath;
     this.lastModified = Date.now();

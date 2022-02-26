@@ -40,7 +40,7 @@ filesRouter.post('/api/files', isLogged, async (req, res) => {
         newFile = new MDFile({ name: name, author: req.user._id });
         await newFile.save();
 
-        let filePath = `${req.user._id.toString()}/${name}.md`;
+        let filePath = `userfiles/${req.user._id.toString()}/${name}.md`;
 
         await fileBucket.putObject({ Bucket: bucketName, Key: filePath, Body: fileData || '' }).promise();
 
