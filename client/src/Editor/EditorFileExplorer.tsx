@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { AuthContext } from "../Auth/AuthContext";
 import Loader from "../Loader";
@@ -8,7 +9,7 @@ import CreateRenameDiag from "./Dialogs/CreateRenameDiag";
 import DeleteDiag from "./Dialogs/DeleteDiag";
 import { EditorContext } from "./EditorContext";
 
-const EditorFileExplorerDiv = styled.div<{ collapsed: boolean }>`
+const EditorFileExplorerDiv = styled.div<{ collapsed: boolean, isLoggedIn: boolean }>`
     position: absolute;
     width: 25%;
 
@@ -26,6 +27,40 @@ const EditorFileExplorerDiv = styled.div<{ collapsed: boolean }>`
 
     transition: 0.25s ease-in-out;
     
+    .unauthorised-only {
+        opacity: ${props => props.isLoggedIn ? '0' : '1'};
+        visibility: ${props => props.isLoggedIn ? '0' : '1'};
+    }
+
+    .register-btn {
+        outline: none;
+        border: none;
+
+        width: 60%;
+        padding: 0.5em 0;
+        max-width: 15rem;
+
+        align-self: center;
+        margin-top: 2.5em;
+
+        background-color: hsl(0, 0%, 100%);
+        box-shadow: 0px 0px 6px white;
+        border-radius: 3px;
+
+        font-size: 2em;
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition: 0.15s ease-in-out;
+
+        :hover {
+            background-color: hsl(0, 0%, 10%);
+            box-shadow: 0px 0px 4px white;
+            color: white;
+        }
+    }
+
 `
 
 const ExplorerFileDiv = styled.div`
@@ -273,7 +308,7 @@ const ExplorerFile: React.FC<ExplorerFileProps> = (props) => {
     )
 }
 
-const FileList = styled.div`
+const FileList = styled.div<{ isLoggedIn: boolean; }>`
     
 
     margin: 0 auto;
@@ -298,6 +333,9 @@ const FileList = styled.div`
     > *:last-of-type {
         margin-bottom: 1.75em;
     }
+
+    ${props => !props.isLoggedIn ?
+        'display: flex; flex-direction: column; justify-content: center; align-items: center' : ''};
 `
 
 const ExplorerControlsDiv = styled.div`
@@ -405,12 +443,14 @@ const EditorFileExplorer: React.FC = (props) => {
     const { createRenameDiagOpen } = editorState.editorExplorer;
     const { setCreateRenameDiagOpen } = editorFunctions;
 
-    const [isRenaming, setIsRenaming] = useState(false);
+    const navigate = useNavigate();
 
+    const [isRenaming, setIsRenaming] = useState(false);
 
     const [editingFile, setEditingFile] = useState('');
 
     const [deleteDiagOpen, setDeleteDiagOpen] = useState(false);
+
 
     const closeCreateRenameDiag = () => {
         setCreateRenameDiagOpen(false);
@@ -482,6 +522,13 @@ const EditorFileExplorer: React.FC = (props) => {
             setEditingFile={setEditingFile} openDeleteDiag={openDeleteDiag} />)
     }
 
+    const handleRegisterOnClick = () => {
+        if (isLoggedIn) {
+            return;
+        }
+        navigate('/register');
+    }
+
     /* Fetch files if user is logged in */
     useEffect(() => {
 
@@ -494,7 +541,7 @@ const EditorFileExplorer: React.FC = (props) => {
 
     return (
         <>
-            <EditorFileExplorerDiv collapsed={editorState.editorExplorer.explorerCollapsed}>
+            <EditorFileExplorerDiv collapsed={editorState.editorExplorer.explorerCollapsed} isLoggedIn={isLoggedIn}>
 
 
                 <ExplorerControlsDiv>
@@ -517,7 +564,7 @@ const EditorFileExplorer: React.FC = (props) => {
 
                 <Loader loading={searchResultsLoading}
                     custom={'left: 0;background-color: hsla(0, 0%, 0%, 0.2); backdrop-filter: blur(20px); border-radius: 10px;'} />
-                <FileList>
+                <FileList isLoggedIn={isLoggedIn}>
                     {renderFiles()}
                     {editorSearchQuery && !editorSearchResults.length && !searchResultsLoading ?
 
@@ -525,6 +572,8 @@ const EditorFileExplorer: React.FC = (props) => {
                         :
 
                         <></>}
+                    <p style={{ fontSize: '2em', textAlign: 'center' }} className="unauthorised-only">Register/Login to save files on the cloud</p>
+                    <button className="unauthorised-only register-btn" onClick={handleRegisterOnClick}>Register</button>
                 </FileList>
 
                 <CreateRenameDiag renaming={isRenaming} editingID={editingFile} show={createRenameDiagOpen} onHide={closeCreateRenameDiag} />

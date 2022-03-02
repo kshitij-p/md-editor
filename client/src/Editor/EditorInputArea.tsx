@@ -8,6 +8,7 @@ import PrefsDialog from './Dialogs/PrefsDialog';
 import { EditorColorTheme } from '../utils/types';
 import { SnackbarContext } from '../Snackbar/SnackbarContext';
 import SyntaxDiag from './Dialogs/Help/SyntaxDiag';
+import { useNavigate } from 'react-router-dom';
 
 
 const EditorInputAreaDiv = styled.div<{ explorerCollapsed: boolean }>`
@@ -47,7 +48,6 @@ const EditorInputAreaDiv = styled.div<{ explorerCollapsed: boolean }>`
         flex-direction: column;
 
         flex-grow: 1;
-
         
         position: relative;
     }
@@ -150,17 +150,28 @@ const FileBar = styled.div<FileBarProps>`
         
         
     }
+    
+    .authorised-only {
+        color: ${props => props.isLoggedIn ? '' : 'hsl(0, 0%, 60%)'};
 
-    .file-menu {
-        b.save-btn {
-            color: ${props => props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 60%)'};
+        pointer-events: ${props => props.isLoggedIn ? '' : 'none'};
 
-            :hover {
-                background-color: ${props => props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 30%)'};
-            }
+        :hover {
+            background-color: ${props => props.isLoggedIn ? '' : 'hsl(0, 0%, 30%)'};
         }
+
     }
-                
+
+    .unauthorised-only {
+        color: ${props => !props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 60%)'};
+
+        pointer-events: ${props => !props.isLoggedIn ? '' : 'none'};
+
+        :hover {
+            background-color: ${props => !props.isLoggedIn ? 'auto' : 'hsl(0, 0%, 30%)'};
+        }
+        
+    }
 `
 
 type RenderedTextDivProps = {
@@ -172,7 +183,7 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     width: 100%;
 
     /* Padding for our splitter */
-    padding-top: 5px ; /* Change me when orientatiobn changes */
+    padding-top: 5px ; 
     
     padding-left: 1em;
 
@@ -181,12 +192,6 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     font-size: 2em;
     font-weight: 300;
     white-space: pre-wrap;
-
-    /* For hide option */
-    /* visibility: ${props => !props.textEditorOpen ? 'visible' : 'hidden'};
-    opacity: ${props => !props.textEditorOpen ? '1' : '0'};
-
-    display: ${props => !props.textEditorOpen ? 'inline-block' : 'none'}; */
 
     overflow-y: scroll;
     scrollbar-width: none;
@@ -375,8 +380,6 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
             :hover {
                 opacity: 1;
                 visibility: visible;
-
-                
             }
         }
 
@@ -539,6 +542,7 @@ const EditorInputArea: React.FC = () => {
 
     const { renderedView } = editorState;
 
+    const navigate = useNavigate();
 
     const openEditorOnClick = () => {
         editorFunctions.setInEditorMode(true);
@@ -550,7 +554,6 @@ const EditorInputArea: React.FC = () => {
     }
 
     const onSplitterDragStart = (event: any) => {
-
 
         let newGhostImg: HTMLDivElement = event.target.parentElement;
 
@@ -581,13 +584,8 @@ const EditorInputArea: React.FC = () => {
 
                 editorFunctions.setEditorHeight(newHeight);
 
-
             }
         }
-
-
-
-
 
     }
 
@@ -640,6 +638,19 @@ const EditorInputArea: React.FC = () => {
     }
 
     const handleHelpMenuOnClick = () => {
+        if (editor.currMenubarOption === 3) {
+            editorFunctions.closeMenubar();
+            return;
+        }
+
+        editorFunctions.setCurrMenubarOption(3);
+    }
+
+    const handleSyntaxHelpOnClick = () => {
+        editorFunctions.openSyntaxHelpDiag(true);
+    }
+
+    const handleAccountOnClick = () => {
         if (editor.currMenubarOption === 2) {
             editorFunctions.closeMenubar();
             return;
@@ -648,8 +659,25 @@ const EditorInputArea: React.FC = () => {
         editorFunctions.setCurrMenubarOption(2);
     }
 
-    const handleSyntaxHelpOnClick = () => {
-        editorFunctions.openSyntaxHelpDiag(true);
+    const handleLoginOnClick = () => {
+        if (isLoggedIn) {
+            return;
+        }
+        navigate('/login');
+    }
+
+    const handleRegisterOnClick = () => {
+        if (isLoggedIn) {
+            return;
+        }
+        navigate('/register');
+    }
+
+    const handleLogoutOnClick = () => {
+        if (!isLoggedIn) {
+            return;
+        }
+        navigate('/logout');
     }
 
     const handleOnNewClick = () => {
@@ -740,8 +768,6 @@ const EditorInputArea: React.FC = () => {
             editorFunctions.openLocalFile(files);
         }
 
-
-
     }
 
     const syncScroll = (e: React.MouseEvent<HTMLDivElement> | any) => {
@@ -757,14 +783,9 @@ const EditorInputArea: React.FC = () => {
 
         let maxEditorScrollHeight = e.height - e.clientHeight;
 
-
-
-
         targetScrollPos = (cmEditor.scrollTop / maxEditorScrollHeight);
         renderedViewDom.scrollTop = renderedView.renderedViewDivRef.current.scrollHeight * targetScrollPos;
         return;
-
-
 
     }
 
@@ -875,7 +896,7 @@ const EditorInputArea: React.FC = () => {
                         <div className='file-menu menu-container'
                             style={{ opacity: `${editor.currMenubarOption === 0 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 0 ? 'visible' : 'hidden'}` }}>
                             <b onClick={handleOpenClick}>Open Local File</b>
-                            <b className='save-btn' onClick={handleSaveClick}>Save</b>
+                            <b className='authorised-only' onClick={handleSaveClick}>Save</b>
                             <b onClick={handleOnNewClick}>New</b>
                             <b onClick={handleDownloadClick}>Download File</b>
                         </div>
@@ -888,9 +909,20 @@ const EditorInputArea: React.FC = () => {
 
                     <div style={{ display: 'inline-block', position: 'relative' }}>
 
+                        <button onClick={handleAccountOnClick} className="MenubarButton MenubarOpener">Account</button>
+                        <div className='account-menu menu-container'
+                            style={{ opacity: `${editor.currMenubarOption === 2 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 2 ? 'visible' : 'hidden'}` }}>
+                            <b onClick={handleLoginOnClick} className="unauthorised-only">Login</b>
+                            <b onClick={handleRegisterOnClick} className="unauthorised-only">Register</b>
+                            <b onClick={handleLogoutOnClick} className="authorised-only">Logout</b>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'inline-block', position: 'relative' }}>
+
                         <button onClick={handleHelpMenuOnClick} className="MenubarButton MenubarOpener">Help</button>
                         <div className='help-menu menu-container'
-                            style={{ opacity: `${editor.currMenubarOption === 2 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 2 ? 'visible' : 'hidden'}` }}>
+                            style={{ opacity: `${editor.currMenubarOption === 3 ? '1' : '0'}`, visibility: `${editor.currMenubarOption === 3 ? 'visible' : 'hidden'}` }}>
                             <b onClick={handleSyntaxHelpOnClick}>MD Syntax</b>
                         </div>
                     </div>
