@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import './reset.css'
 import styled from 'styled-components'
 import Editor from './Editor/Editor';
-import { EditorContext, EditorContextProvider } from './Editor/EditorContext';
+import { EditorContext } from './Editor/EditorContext';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Login from './Auth/Login';
 import Register from './Auth/Register';

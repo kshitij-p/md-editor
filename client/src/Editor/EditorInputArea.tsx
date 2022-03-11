@@ -196,9 +196,6 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
     overflow-y: scroll;
     scrollbar-width: none;
 
-    
-    transition: 0.1s;
-
     ::-webkit-scrollbar {
 
     }
@@ -424,7 +421,6 @@ type CodeMirrorEditorPaneProps = {
 const CodeMirrorEditorPane = styled.div<CodeMirrorEditorPaneProps>`
     /* Temp height */
     position: relative;
-    transition: 0.1s;
 
     position: relative;
 
@@ -506,9 +502,7 @@ const PaneSplitterDiv = styled.div`
     box-shadow: 0px 0px 8px hsla(0, 0%, 100%, 0.2);
     backdrop-filter: blur(25px);
 
-    transition: 0.1s;
     z-index: 999999;
-
 
     div.pane-splitter-thumb {
         position: absolute;
@@ -553,21 +547,12 @@ const EditorInputArea: React.FC = () => {
         editorFunctions.setInEditorMode(false);
     }
 
-    const onSplitterDragStart = (event: any) => {
-
-        let newGhostImg: HTMLDivElement = event.target.parentElement;
-
-        if (!newGhostImg) {
-            return
-        }
-
-
+    const handleSplitterDragStart = () => {
         editorFunctions.setIsDraggingSplitter(true);
-        event.dataTransfer.setDragImage(newGhostImg, Math.round(newGhostImg.clientWidth / 2), 0);
     }
 
-    const onSplitterDrag = (event: any) => {
-        if (!event.clientY) {
+    const handleSplitterDrag = (event: any) => {
+        if (!editor.isDraggingSplitter || !event.clientY) {
             return;
         }
 
@@ -589,22 +574,21 @@ const EditorInputArea: React.FC = () => {
 
     }
 
-    const onSplitterDragEnd = () => {
-        editorFunctions.setIsDraggingSplitter(false);
+    const handleSplitterDragEnd = () => {
+        if (editor.isDraggingSplitter) {
+            editorFunctions.setIsDraggingSplitter(false);
+        }
     }
 
     const onTouchStart = (event: any) => {
-        event.preventDefault();
-        /*  document.body.style.overflow = 'hidden'; */
-        /*   document.body.style.touchAction = 'none'; */
+        document.body.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
     }
 
     const onTouchMove = (event: any) => {
-        event.preventDefault();
         if (!event.targetTouches.length) {
             return;
         }
-
 
         let newY = event.targetTouches[0].clientY;
 
@@ -624,8 +608,8 @@ const EditorInputArea: React.FC = () => {
     }
 
     const onTouchEnd = () => {
-        /*  document.body.style.overflow = ''; */
-        /*  document.body.style.touchAction = ''; */
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
     }
 
     const handleFileMenuOnClick = () => {
@@ -885,6 +869,20 @@ const EditorInputArea: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editor.currMenubarOption])
 
+    useEffect(() => {
+
+        document.addEventListener('mousemove', handleSplitterDrag);
+        document.addEventListener('mouseup', handleSplitterDragEnd);
+
+        return function cleanup() {
+            document.removeEventListener('mousemove', handleSplitterDrag);
+            document.removeEventListener('mouseup', handleSplitterDragEnd);
+
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editor.isDraggingSplitter])
+
     return (
         <EditorInputAreaDiv explorerCollapsed={editorState.editorExplorer.explorerCollapsed}>
             <div className='menubar'>
@@ -955,9 +953,8 @@ const EditorInputArea: React.FC = () => {
 
                 <PaneSplitterDiv tabIndex={3} draggable={false} className='PaneSplitterDiv'
                     style={{ top: `${editor.editorHeight}%`, display: `${editor.isLoading ? 'none' : 'block'}` }}>
-                    <div className='pane-splitter-thumb' onDrag={onSplitterDrag} onDragStart={onSplitterDragStart}
-                        onDragEnd={onSplitterDragEnd}
-                        draggable={true} onClick={onSplitterClick}
+                    <div className='pane-splitter-thumb' onDrag={handleSplitterDrag} onMouseDown={handleSplitterDragStart}
+                        draggable={false} onClick={onSplitterClick}
                         onTouchStart={onTouchStart}
                         onTouchMove={onTouchMove}
                         onTouchEnd={onTouchEnd}></div>
