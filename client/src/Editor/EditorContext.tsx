@@ -1,12 +1,11 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import React, { ChangeEvent, ChangeEventHandler, createContext, MouseEventHandler, RefObject, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, MouseEventHandler, RefObject, useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../Auth/AuthContext";
 import { SnackbarContext } from "../Snackbar/SnackbarContext";
 import defaultMDFile from "../utils/defaultMDFile";
 import { defaultCustomTheme, defaultThemes } from "../utils/defaultThemes";
 import customRenderer from "../utils/marked/customRenderer";
-import { sampleResponse } from "../utils/sampleResponse";
 import { EditorColorTheme, EditorPreferencesType, MDFile } from "../utils/types";
 
 
@@ -598,6 +597,7 @@ const EditorContextProvider: React.FC = (props) => {
 
         fetchPreferences();
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoggedIn])
 
     const state: EditorContextState = {

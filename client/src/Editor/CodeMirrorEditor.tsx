@@ -18,24 +18,8 @@ type StyledEditorProps = {
     textEditorOpen: boolean;
 }
 const StyledEditor = styled(CodeMirror) <StyledEditorProps>`
-    
-    /* For hide option */
-    /* visibility: ${props => props.textEditorOpen ? 'visible' : 'hidden'};
-        opacity: ${props => props.textEditorOpen ? '1' : '0'};
-
-        display: ${props => props.textEditorOpen ? 'inline-block' : 'none'};
-         */
-
     height: 100%;
     width: 100%;
-
-    overflow-y: scroll;
-
-    ::-webkit-scrollbar {
-        display: none;
-    }
-
-    
 `
 
 type CodeMirrorEditorProps = {
@@ -285,9 +269,10 @@ class CodeMirrorEditor extends React.PureComponent<{ syncScroll: React.MouseEven
                             theme: 'material',
                             lineNumbers: true,
                             mode: 'gfm',
-                            lineWrapping: true,
-                            /* Drag and drop is disabled for custom drag and drop */
-                            dragDrop: false
+                            lineWrapping: false,
+                            dragDrop: false, /* Drag and drop is disabled for custom drag and drop */
+                            scrollbarStyle: 'null',
+                            viewportMargin: 20
 
                         }
                     }

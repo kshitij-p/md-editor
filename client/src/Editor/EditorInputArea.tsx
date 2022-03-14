@@ -530,6 +530,7 @@ const EditorInputArea: React.FC = () => {
 
     const { isLoggedIn } = useContext(AuthContext);
     const { editorState, editorFunctions } = useContext(EditorContext);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { snackbarFunctions } = useContext(SnackbarContext);
 
     const { editor } = editorState;

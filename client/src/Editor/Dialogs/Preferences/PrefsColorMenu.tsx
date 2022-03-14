@@ -1,8 +1,7 @@
-import React, { MouseEventHandler, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { ColorChangeHandler, ColorResult, SketchPicker } from 'react-color'
 import { EditorContext } from '../../EditorContext';
-import { AuthContext } from '../../../Auth/AuthContext';
 
 const PrefsColorMenuDiv = styled.div<{ selectingColor: boolean }>`
     align-self: center;

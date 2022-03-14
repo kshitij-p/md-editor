@@ -1,5 +1,4 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import BasicDialog from '../../../BasicDialog'
 import { responsiveSizes } from '../../../utils/responsiveSizes'
@@ -262,7 +261,7 @@ const SyntaxDiag: React.FC<SyntaxDiagProps> = (props) => {
             <SyntaxHelpDiv>
 
                 <h2 className='title-text'>Markdown Syntax</h2>
-            {/*     <Link to={''}/> */}
+                {/*     <Link to={''}/> */}
 
                 <SyntaxTableContainer>
 

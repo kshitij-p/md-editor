@@ -5,4 +5,9 @@
 .CodeMirror-scroll {
   max-width: 100%;
   overflow-x: hidden !important;
+  scrollbar-width: thin;
+}
+
+.CodeMirror-code {
+  margin-bottom: 1em;
 }
