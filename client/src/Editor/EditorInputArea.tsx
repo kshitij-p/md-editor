@@ -382,6 +382,9 @@ const RenderedTextDiv = styled.div<RenderedTextDivProps>`
 
     }
     
+    div.rendered-paragraph {
+        margin: 1em 0;
+    }
 
     div.rendered-checkbox {
         
